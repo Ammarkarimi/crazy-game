@@ -18,7 +18,7 @@ const SHIPS = [
   {
     id: 'bulwark', name: 'BULWARK', color: '#ffb000', cost: 600,
     desc: 'Flying fortress. Thick armor and a five-barrel shotgun. Slow but brutal.',
-    stats: { maxHp: 170, speed: 245, fireRate: 2.4, damage: 9, shots: 5, spread: 0.15, armor: 0.15, bulletLife: 0.62 },
+    stats: { maxHp: 170, speed: 245, fireRate: 2.4, damage: 11, shots: 5, spread: 0.15, armor: 0.15, bulletLife: 0.62 },
   },
   {
     id: 'prism', name: 'PRISM', color: '#b84dff', cost: 900,
@@ -42,17 +42,17 @@ const RARITY = {
 
 const UPGRADES = [
   // ---- common ----
-  { id: 'overclock', name: 'Overclock', ico: '»', r: 'common', max: 10, desc: '+15% fire rate', apply: p => { p.fireRate *= 1.15; } },
-  { id: 'hollow', name: 'Hollow Points', ico: '✸', r: 'common', max: 10, desc: '+20% damage', apply: p => { p.damage *= 1.2; } },
+  { id: 'overclock', name: 'Overclock', ico: '»', r: 'common', max: 8, desc: '+15% fire rate', apply: p => { p.rateAdd += 0.15; } },
+  { id: 'hollow', name: 'Hollow Points', ico: '✸', r: 'common', max: 8, desc: '+20% damage', apply: p => { p.dmgAdd += 0.2; } },
   { id: 'velocity', name: 'Railgun Coils', ico: '➹', r: 'common', max: 5, desc: '+20% bullet speed, +10% range', apply: p => { p.bulletSpeed *= 1.2; p.bulletLife *= 1.1; } },
   { id: 'thrusters', name: 'Thrusters', ico: '⇶', r: 'common', max: 5, desc: '+9% move speed', apply: p => { p.speed *= 1.09; } },
   { id: 'plating', name: 'Nano Plating', ico: '✚', r: 'common', max: 8, desc: '+20 max HP and heal 20', apply: p => { p.maxHp += 20; p.hp = Math.min(p.maxHp, p.hp + 20); } },
   { id: 'magnet', name: 'Tractor Beam', ico: '◎', r: 'common', max: 5, desc: '+35% pickup range', apply: p => { p.magnet *= 1.35; } },
   { id: 'regen', name: 'Regenerator', ico: '♥', r: 'common', max: 6, desc: 'Regenerate +0.6 HP per second', apply: p => { p.regen += 0.6; } },
   { id: 'crit', name: 'Weak Spot', ico: '✦', r: 'common', max: 6, desc: '+8% critical hit chance', apply: p => { p.crit += 0.08; } },
-  { id: 'caliber', name: 'Big Caliber', ico: '●', r: 'common', max: 4, desc: '+25% bullet size, +8% damage', apply: p => { p.bulletSize *= 1.25; p.damage *= 1.08; } },
+  { id: 'caliber', name: 'Big Caliber', ico: '●', r: 'common', max: 4, desc: '+25% bullet size, +8% damage', apply: p => { p.bulletSize *= 1.25; p.dmgAdd += 0.08; } },
   // ---- rare ----
-  { id: 'multishot', name: 'Split Shot', ico: '⁂', r: 'rare', max: 6, desc: '+1 projectile per shot', apply: p => { p.shots += 1; p.spread = Math.max(p.spread, 0.13); } },
+  { id: 'multishot', name: 'Split Shot', ico: '⁂', r: 'rare', max: 5, desc: '+1 projectile per shot', apply: p => { p.shots += 1; p.spread = Math.max(p.spread, 0.13); } },
   { id: 'pierce', name: 'Piercer', ico: '➶', r: 'rare', max: 5, desc: 'Bullets pierce +1 enemy', apply: p => { p.pierce += 1; } },
   { id: 'ricochet', name: 'Ricochet', ico: '↯', r: 'rare', max: 4, desc: 'Bullets bounce +1 time off walls and enemies', apply: p => { p.bounce += 1; } },
   { id: 'orbital', name: 'Orbital Blade', ico: '✇', r: 'rare', max: 6, desc: '+1 blade orbiting your ship', apply: p => { p.orbitals += 1; } },
@@ -73,8 +73,8 @@ const UPGRADES = [
   { id: 'thunder', name: 'Thunder God', ico: '☈', r: 'epic', max: 4, desc: 'Lightning periodically smites random enemies', apply: p => { p.thunder += 1; } },
   { id: 'secondwind', name: 'Second Wind', ico: '☥', r: 'epic', max: 1, desc: 'Revive once with 50% HP', apply: p => { p.secondWind += 1; } },
   // ---- legendary ----
-  { id: 'glass', name: 'Glass Cannon', ico: '◇', r: 'legendary', max: 1, desc: '+70% damage, but -30% max HP', apply: p => { p.damage *= 1.7; p.maxHp = Math.round(p.maxHp * 0.7); p.hp = Math.min(p.hp, p.maxHp); } },
-  { id: 'storm', name: 'Bullet Storm', ico: '☄', r: 'legendary', max: 1, desc: '+3 projectiles, +25% fire rate, -15% damage', apply: p => { p.shots += 3; p.fireRate *= 1.25; p.damage *= 0.85; p.spread = Math.max(p.spread, 0.16); } },
+  { id: 'glass', name: 'Glass Cannon', ico: '◇', r: 'legendary', max: 1, desc: '+70% damage, but -30% max HP', apply: p => { p.dmgMul *= 1.7; p.maxHp = Math.round(p.maxHp * 0.7); p.hp = Math.min(p.hp, p.maxHp); } },
+  { id: 'storm', name: 'Bullet Storm', ico: '☄', r: 'legendary', max: 1, desc: '+3 projectiles, +25% fire rate, -15% damage', apply: p => { p.shots += 3; p.rateMul *= 1.25; p.dmgMul *= 0.85; p.spread = Math.max(p.spread, 0.16); } },
   { id: 'timewarp', name: 'Time Warp', ico: '⧗', r: 'legendary', max: 1, desc: 'Overdrive lasts 4s longer and charges 25% faster', apply: p => { p.odDuration += 4; p.chaosGain *= 1.25; } },
   { id: 'midas', name: 'Midas Touch', ico: '♛', r: 'legendary', max: 1, desc: 'Kills have an 8% chance to drop shards. +25% score', apply: p => { p.midas = true; } },
   { id: 'hydra', name: 'Hydra Shells', ico: '⋔', r: 'legendary', max: 1, desc: 'Bullets split into two on every hit', apply: p => { p.hydra = true; } },

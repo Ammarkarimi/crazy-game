@@ -55,7 +55,7 @@ function hover(e, dt, p, range, spd) {
 const BOSSES = {
   /* ---------------------------------------------------------------- HIVE */
   hive: {
-    name: 'HIVE QUEEN', title: 'Mother of the Swarm', color: '#ffb000', hp: 3200, r: 62, speed: 85, dmg: 20,
+    name: 'HIVE QUEEN', title: 'Mother of the Swarm', color: '#ffb000', hp: 4000, r: 62, speed: 85, dmg: 20,
     score: 2500, xp: 60, phases: [0.5, 0.2],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -116,7 +116,7 @@ const BOSSES = {
 
   /* --------------------------------------------------------- OBLITERATOR */
   obliterator: {
-    name: 'OBLITERATOR', title: 'Siege Engine Mk.IX', color: '#ff3b3b', hp: 9000, r: 58, speed: 95, dmg: 28,
+    name: 'OBLITERATOR', title: 'Siege Engine Mk.IX', color: '#ff3b3b', hp: 12000, r: 58, speed: 95, dmg: 22,
     score: 5000, xp: 100, phases: [0.5, 0.25],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -148,13 +148,13 @@ const BOSSES = {
       e.angle = angleTo(e.x, e.y, p.x, p.y);
       if (e.patT <= 0) {
         e.pattern = (e.pattern + 1) % 3;
-        if (e.pattern === 0) { e.mode = 'aim'; e.modeT = 0.8; e.charges = e.phase > 1 ? 3 : 2; e.patT = 4.2; }
+        if (e.pattern === 0) { e.mode = 'aim'; e.modeT = 0.9; e.charges = e.phase > 1 ? 3 : 2; e.patT = 4.2; }
         if (e.pattern === 1) {
           const base = angleTo(e.x, e.y, p.x, p.y);
           const n = e.phase > 1 ? 5 : 3;
           for (let i = 0; i < n; i++) {
             const a = base + (i - (n - 1) / 2) * (TAU / (n * 1.6));
-            addHazard({ kind: 'laser', owner: e, x: e.x, y: e.y, angle: a, angVel: e.phase > 1 ? (i % 2 ? 0.45 : -0.45) : 0.25, len: 2800, width: 30, warn: 1.0, dur: 1.1, dmg: 26 * W.dmgScale, color: e.color });
+            addHazard({ kind: 'laser', owner: e, x: e.x, y: e.y, angle: a, angVel: e.phase > 1 ? (i % 2 ? 0.45 : -0.45) : 0.25, len: 2800, width: 30, warn: 1.0, dur: 1.1, dmg: 20 * W.dmgScale, color: e.color });
           }
           Sound.play('laserCharge');
           e.patT = 3.6;
@@ -198,7 +198,7 @@ const BOSSES = {
 
   /* ---------------------------------------------------------- MIRRORMIND */
   mirror: {
-    name: 'MIRRORMIND', title: 'The Thousand Reflections', color: '#7dffef', hp: 16000, r: 54, speed: 110, dmg: 22,
+    name: 'MIRRORMIND', title: 'The Thousand Reflections', color: '#7dffef', hp: 22000, r: 54, speed: 110, dmg: 22,
     score: 9000, xp: 150, phases: [0.55, 0.25],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -280,7 +280,7 @@ const BOSSES = {
 
   /* -------------------------------------------------------- CHAOS ENGINE */
   engine: {
-    name: 'CHAOS ENGINE', title: 'Heart of the Madness', color: '#ff2bd6', hp: 32000, r: 84, speed: 70, dmg: 30,
+    name: 'CHAOS ENGINE', title: 'Heart of the Madness', color: '#ff2bd6', hp: 45000, r: 84, speed: 70, dmg: 30,
     score: 20000, xp: 250, phases: [0.66, 0.33],
     update(e, dt, p) {
       bossPhaseCheck(e);

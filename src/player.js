@@ -11,8 +11,8 @@ function makePlayer(ship) {
     x: ARENA_W / 2, y: ARENA_H / 2, vx: 0, vy: 0, r: 13, angle: -Math.PI / 2,
     maxHp: (s.maxHp || 100) + m.hp * 10, hp: 0,
     speed: (s.speed || 290) * (1 + m.speed * 0.04),
-    fireRate: s.fireRate || 6, fireCd: 0,
-    damage: (s.damage || 10) * (1 + m.dmg * 0.06),
+    fireRate: s.fireRate || 6, baseRate: s.fireRate || 6, rateAdd: 0, rateMul: 1, fireCd: 0,
+    damage: 0, baseDamage: s.damage || 10, dmgAdd: m.dmg * 0.06, dmgMul: 1,
     bulletSpeed: 820, bulletLife: s.bulletLife || 0.85, bulletSize: 5,
     shots: s.shots || 1, spread: s.spread || 0.1,
     pierce: 0, bounce: 0, crit: 0.05, critMult: 2,
@@ -26,8 +26,18 @@ function makePlayer(ship) {
     hurtT: 0, muzzle: 0, autoTarget: null, autoT: 0, thrust: 0,
   };
   p.hp = p.maxHp;
+  recalcStats(p);
   return p;
 }
+
+/* Damage and fire-rate bonuses stack additively; only legendaries multiply. */
+function recalcStats(p) {
+  p.damage = p.baseDamage * (1 + p.dmgAdd) * p.dmgMul;
+  p.fireRate = p.baseRate * (1 + p.rateAdd) * p.rateMul;
+}
+
+/* Wide volleys trade per-bullet damage for coverage. */
+function volleyDamage(n) { return n > 1 ? Math.max(0.6, 1 - 0.07 * (n - 1)) : 1; }
 
 function nearestEnemy(x, y, maxR, exclude) {
   let best = null, bd = maxR * maxR;
@@ -139,9 +149,10 @@ function bulletArc(n, spread) { return n <= 1 ? 0 : Math.min(1.3, spread * (n - 
 function firePlayer(p) {
   const n = p.shots;
   const arc = bulletArc(n, p.spread);
+  const vd = volleyDamage(n);
   for (let i = 0; i < n; i++) {
     const a = p.angle + (n === 1 ? 0 : (i / (n - 1) - 0.5) * arc) + frand(-0.025, 0.025);
-    spawnBullet(p.x + Math.cos(p.angle) * 14, p.y + Math.sin(p.angle) * 14, a, p, 1);
+    spawnBullet(p.x + Math.cos(p.angle) * 14, p.y + Math.sin(p.angle) * 14, a, p, vd);
   }
   for (let k = 0; k < p.backShot; k++) {
     const a = p.angle + Math.PI + (p.backShot === 1 ? 0 : (k - 0.5) * 0.25);

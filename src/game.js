@@ -33,6 +33,7 @@ function addHazard(h) {
 
 function enemyBullet(x, y, a, speed, o = {}) {
   if (W.ebullets.length > 1400) return;
+  speed *= 1 + Math.min(0.35, (W.wave - 1) * 0.018);
   W.ebullets.push({
     x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, speed,
     r: (o.r || 6) * (W.sizeMult || 1), dmg: o.dmg || 10 * W.dmgScale,
@@ -251,7 +252,7 @@ function dropXP(x, y, amount) {
   }
 }
 
-function xpNeed(l) { return Math.floor(5 + l * 4 + Math.pow(l, 1.55) * 1.2); }
+function xpNeed(l) { return Math.floor(8 + l * 6 + Math.pow(l, 1.8)); }
 
 function addXP(v) {
   const p = W.player;
@@ -309,9 +310,10 @@ function startWave(n) {
   W.spawnT = 0.4;
   W.waveHit = false;
   W.isBossWave = n % 5 === 0;
-  W.hpScale = 1 + 0.17 * (n - 1) + 0.011 * (n - 1) ** 2;
-  W.dmgScale = 1 + 0.05 * (n - 1);
-  W.spdScale = 1 + Math.min(0.3, 0.012 * (n - 1));
+  W.hpScale = 1 + 0.22 * (n - 1) + 0.022 * (n - 1) ** 2;
+  W.dmgScale = 1 + 0.06 * (n - 1);
+  W.spdScale = 1 + Math.min(0.42, 0.02 * (n - 1));
+  W.formationT = rng.range(6, 10);
   W.waveDuration = W.isBossWave ? 0 : 26 + Math.min(n, 20) * 1.3;
   W.pendingEvent = null;
   if (!W.isBossWave && n >= 2) {
@@ -443,7 +445,7 @@ function updateWaves(dt) {
   const prog = W.waveT / W.waveDuration;
   W.spawnT -= dt;
   if (W.spawnT <= 0) {
-    const interval = Math.max(0.15, 1.0 - n * 0.037) * (1 - 0.35 * prog) / (W.spawnEventMult || 1);
+    const interval = Math.max(0.13, 0.95 - n * 0.04) * (1 - 0.35 * prog) / (W.spawnEventMult || 1);
     W.spawnT = interval * rng.range(0.7, 1.3);
     let alive = 0;
     for (const e of W.enemies) if (!e.dead) alive++;
@@ -457,7 +459,33 @@ function updateWaves(dt) {
       for (let i = 0; i < count; i++) spawnEnemy(type, pt.x + rng.range(-45, 45), pt.y + rng.range(-45, 45));
     }
   }
+  // Encirclement formations: a ring of enemies materialises around the player
+  if (n >= 6) {
+    W.formationT -= dt;
+    if (W.formationT <= 0) {
+      W.formationT = Math.max(5, rng.range(9, 13) - n * 0.2);
+      spawnFormation(n);
+    }
+  }
   if (W.waveT >= W.waveDuration) waveCleared();
+}
+
+function spawnFormation(n) {
+  const p = W.player;
+  const pool = ['swarm', 'drone'];
+  if (n >= 9) pool.push('dasher');
+  if (n >= 12) pool.push('bomber');
+  if (n >= 15) pool.push('shooter');
+  const type = rng.pick(pool);
+  const count = Math.min(28, (type === 'swarm' ? 14 : 8) + Math.floor(n / 2));
+  const R = rng.range(380, 460);
+  const off = rng.range(0, TAU);
+  for (let i = 0; i < count; i++) {
+    const a = off + i / count * TAU;
+    spawnEnemy(type, p.x + Math.cos(a) * R, p.y + Math.sin(a) * R, { elite: false });
+  }
+  FX.text(p.x, p.y - 60, 'SURROUNDED!', '#ff3b6b', 18, 1, { pop: 0.4 });
+  Sound.play('warning');
 }
 
 /* ---------------------------------------------------------------------------
@@ -488,6 +516,7 @@ function rollUpgrades(n) {
 function applyUpgrade(u) {
   const p = W.player;
   u.apply(p);
+  recalcStats(p);
   if (u.id[0] !== '_') W.upgrades[u.id] = (W.upgrades[u.id] || 0) + 1;
   if (u.r === 'legendary') Achievements.unlock('legendary');
 }

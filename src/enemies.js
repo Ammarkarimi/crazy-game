@@ -231,7 +231,7 @@ let enemyIdSeq = 1;
 function spawnEnemy(type, x, y, opts = {}) {
   const def = ENEMIES[type];
   if (!def) return null;
-  const elite = opts.elite !== undefined ? opts.elite : (W.wave >= 4 && rng.chance(0.025 + W.wave * 0.004));
+  const elite = opts.elite !== undefined ? opts.elite : (W.wave >= 4 && rng.chance(0.02 + W.wave * 0.005));
   const sizeMult = W.sizeMult || 1;
   const hp = def.hp * W.hpScale * (W.hpEventMult || 1) * (elite ? 4.5 : 1);
   const e = {
