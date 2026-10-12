@@ -18,7 +18,7 @@ const SHIPS = [
   {
     id: 'bulwark', name: 'BULWARK', color: '#ffb000', cost: 600,
     desc: 'Flying fortress. Thick armor and a five-barrel shotgun. Slow but brutal.',
-    stats: { maxHp: 170, speed: 245, fireRate: 2.4, damage: 9, shots: 5, spread: 0.55, armor: 0.15, bulletLife: 0.62 },
+    stats: { maxHp: 170, speed: 245, fireRate: 2.4, damage: 9, shots: 5, spread: 0.15, armor: 0.15, bulletLife: 0.62 },
   },
   {
     id: 'prism', name: 'PRISM', color: '#b84dff', cost: 900,
