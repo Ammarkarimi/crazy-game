@@ -124,7 +124,27 @@ const HUD = {
     this.text(ctx, 'LV ' + w.level, pad, xy - 6, small ? 13 : 16, '#ffffff', 'left', 900);
 
     // ---- minimap ----
-    if (!small || sh > 600) this.drawMinimap(ctx, sw - pad - (small ? 110 : 170), xy - (small ? 86 : 128) - 8, small ? 110 : 170);
+    if (Input.device === 'touch') this.drawMinimap(ctx, pad, xy - 30 - 80, 112);
+    else if (!small || sh > 600) this.drawMinimap(ctx, sw - pad - (small ? 110 : 170), xy - (small ? 86 : 128) - 8, small ? 110 : 170);
+
+    // ---- off-screen boss pointer ----
+    if (w.boss && !w.boss.dead) {
+      const s = Game.worldToScreen(w.boss.x, w.boss.y);
+      const m = 46;
+      if (s.x < 0 || s.x > sw || s.y < 0 || s.y > sh) {
+        const ax = clamp(s.x, m, sw - m), ay = clamp(s.y, m + 60, sh - m - 20);
+        const a = Math.atan2(s.y - ay, s.x - ax);
+        const col = w.boss.color[0] === '#' ? w.boss.color : '#ff2bd6';
+        ctx.save();
+        ctx.translate(ax, ay);
+        ctx.rotate(a);
+        ctx.fillStyle = col;
+        ctx.globalAlpha = 0.6 + 0.4 * Math.sin(w.realT * 8);
+        ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-8, 12); ctx.lineTo(-3, 0); ctx.lineTo(-8, -12); ctx.closePath(); ctx.fill();
+        ctx.restore();
+        ctx.globalAlpha = 1;
+      }
+    }
 
     // ---- banners ----
     for (const b of w.banners) {
