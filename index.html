@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>HYPERCHAOS</title>
+  <meta name="description" content="HYPERCHAOS - a neon arena roguelite. Survive 20 waves of escalating madness, build absurd weapon combos and unleash OVERDRIVE.">
+  <meta name="theme-color" content="#05010f">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Game canvas"></canvas>
+  <div id="crt" aria-hidden="true"></div>
+
+  <!-- Touch controls (shown automatically on touch devices) -->
+  <div id="touch" aria-hidden="true">
+    <button id="tDash" class="tbtn">DASH</button>
+    <button id="tOver" class="tbtn over">OVR</button>
+    <button id="tPause" class="tbtn pause">II</button>
+  </div>
+
+  <div id="ui">
+    <section id="scr-boot" class="screen active">
+      <div class="logo"><span class="glitch" data-text="HYPERCHAOS">HYPERCHAOS</span></div>
+      <button class="btn primary big" data-act="boot">PRESS TO START</button>
+      <p class="hint">Best with sound on · Keyboard + mouse, gamepad or touch</p>
+    </section>
+
+    <section id="scr-title" class="screen">
+      <div class="logo">
+        <span class="glitch" data-text="HYPERCHAOS">HYPERCHAOS</span>
+        <div class="tagline">NEON ARENA ROGUELITE</div>
+      </div>
+      <div class="menu">
+        <button class="btn primary" data-act="play">PLAY</button>
+        <button class="btn" data-act="daily">DAILY CHAOS <small id="dailyInfo"></small></button>
+        <button class="btn" data-act="endless">ENDLESS <small id="endlessInfo"></small></button>
+        <button class="btn" data-act="shop">UPGRADES</button>
+        <button class="btn" data-act="achievements">ACHIEVEMENTS</button>
+        <button class="btn" data-act="records">RECORDS</button>
+        <button class="btn" data-act="settings">SETTINGS</button>
+        <button class="btn" data-act="howto">HOW TO PLAY</button>
+        <button class="btn" data-act="quit" id="btnQuit" hidden>QUIT</button>
+      </div>
+      <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
+      <div class="footer"><span id="version"></span> · <a href="#" data-act="credits">Credits</a></div>
+    </section>
+
+    <section id="scr-hangar" class="screen">
+      <h2>HANGAR</h2>
+      <p class="sub" id="hangarMode"></p>
+      <div id="shipList" class="ship-list"></div>
+      <div class="row">
+        <button class="btn" data-act="back">BACK</button>
+        <button class="btn primary" data-act="launch" id="btnLaunch">LAUNCH</button>
+      </div>
+      <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
+    </section>
+
+    <section id="scr-shop" class="screen">
+      <h2>UPGRADES</h2>
+      <p class="sub">Permanent boosts. Earn shards by playing.</p>
+      <div id="shopList" class="grid-list"></div>
+      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
+    </section>
+
+    <section id="scr-achievements" class="screen">
+      <h2>ACHIEVEMENTS</h2>
+      <p class="sub" id="achCount"></p>
+      <div id="achList" class="grid-list"></div>
+      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+    </section>
+
+    <section id="scr-records" class="screen">
+      <h2>RECORDS</h2>
+      <div id="recStats" class="stats"></div>
+      <h3>TOP RUNS</h3>
+      <div id="recList" class="rec-list"></div>
+      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+    </section>
+
+    <section id="scr-settings" class="screen">
+      <h2>SETTINGS</h2>
+      <div id="setList" class="settings"></div>
+      <div class="row">
+        <button class="btn" data-act="back">BACK</button>
+        <button class="btn danger" data-act="resetSave">RESET PROGRESS</button>
+      </div>
+    </section>
+
+    <section id="scr-howto" class="screen">
+      <h2>HOW TO PLAY</h2>
+      <div class="howto">
+        <div class="col">
+          <h3>SURVIVE</h3>
+          <p>Clear <b>20 waves</b> of neon horrors. Every 5th wave a <b>boss</b> arrives.</p>
+          <p>Collect <span class="c-cyan">XP crystals</span> to level up and pick upgrades. Stack them into ridiculous builds.</p>
+          <p>Kills charge your <span class="c-mag">CHAOS meter</span>. When full, unleash <b>OVERDRIVE</b>: invincibility, triple fire rate and slowed time.</p>
+          <p>From wave 2, <span class="c-yel">CHAOS EVENTS</span> can twist the rules: meteor storms, mirror worlds, black holes and more.</p>
+          <p>Spend <span class="c-yel">shards</span> on permanent upgrades and new ships.</p>
+        </div>
+        <div class="col">
+          <h3>CONTROLS</h3>
+          <table class="keys">
+            <tr><td>Move</td><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · Left stick</td></tr>
+            <tr><td>Aim</td><td>Mouse · Right stick (auto-aim if idle)</td></tr>
+            <tr><td>Fire</td><td>Auto-fire (toggle in settings) · LMB · RT</td></tr>
+            <tr><td>Dash</td><td><kbd>Space</kbd> / <kbd>Shift</kbd> · A / LB</td></tr>
+            <tr><td>Overdrive</td><td><kbd>Q</kbd> / <kbd>E</kbd> / RMB · Y / RB</td></tr>
+            <tr><td>Pick upgrade</td><td><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> · D-pad + A</td></tr>
+            <tr><td>Reroll</td><td><kbd>R</kbd> · X</td></tr>
+            <tr><td>Pause</td><td><kbd>Esc</kbd> / <kbd>P</kbd> · Start</td></tr>
+          </table>
+          <p class="small">Touch: left side moves, right side aims and fires.</p>
+        </div>
+      </div>
+      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+    </section>
+
+    <section id="scr-credits" class="screen">
+      <h2>CREDITS</h2>
+      <div class="credits">
+        <p><b>HYPERCHAOS</b></p>
+        <p>Design, code, art &amp; sound<br><span id="creditsStudio"></span></p>
+        <p>All graphics and audio are generated in real time.<br>No samples were harmed.</p>
+        <p class="small">Thanks for playing!</p>
+      </div>
+      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+    </section>
+
+    <section id="scr-pause" class="screen dim">
+      <h2>PAUSED</h2>
+      <div class="menu">
+        <button class="btn primary" data-act="resume">RESUME</button>
+        <button class="btn" data-act="settings">SETTINGS</button>
+        <button class="btn" data-act="abandon">ABANDON RUN</button>
+      </div>
+      <h3>YOUR BUILD</h3>
+      <div id="pauseBuild" class="build"></div>
+    </section>
+
+    <section id="scr-levelup" class="screen dim">
+      <h2 class="lvl-title">LEVEL UP!</h2>
+      <p class="sub" id="lvlSub">Choose an upgrade</p>
+      <div id="cards" class="cards"></div>
+      <div class="row">
+        <button class="btn" data-act="reroll" id="btnReroll">REROLL</button>
+        <button class="btn" data-act="skipUpgrade">SKIP <small>+5 ◆</small></button>
+      </div>
+    </section>
+
+    <section id="scr-gameover" class="screen dim">
+      <h2 id="goTitle">GAME OVER</h2>
+      <p class="sub" id="goSub"></p>
+      <div id="goStats" class="stats"></div>
+      <div class="earned">+<span id="goShards">0</span> <span class="shard-ico"></span></div>
+      <div class="row">
+        <button class="btn" data-act="menu">MENU</button>
+        <button class="btn" data-act="continueEndless" id="btnContinue" hidden>KEEP GOING (ENDLESS)</button>
+        <button class="btn primary" data-act="retry">RETRY</button>
+      </div>
+    </section>
+
+    <div id="toasts"></div>
+  </div>
+
+  <script src="src/util.js"></script>
+  <script src="src/save.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/fx.js"></script>
+  <script src="src/data.js"></script>
+  <script src="src/enemies.js"></script>
+  <script src="src/bosses.js"></script>
+  <script src="src/player.js"></script>
+  <script src="src/game.js"></script>
+  <script src="src/hud.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
