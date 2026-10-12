@@ -88,7 +88,7 @@ const HUD = {
       for (const f of ph) { ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(cx - bbw / 2 + bbw * f, top + 22, 2, small ? 10 : 14); }
       this.text(ctx, `WAVE ${w.wave}`, cx, top + (small ? 48 : 54), 11, '#8a8fb8', 'center');
     } else {
-      this.text(ctx, `WAVE ${w.wave}${w.mode !== 'endless' ? ' / ' + STANDARD_WAVES : ''}`, cx, top + (small ? 16 : 22), small ? 16 : 22, '#ffffff', 'center', 900);
+      this.text(ctx, `WAVE ${w.wave}${w.mode !== 'endless' ? ' / ' + (DEMO_MODE ? DEMO_WAVES : STANDARD_WAVES) : ''}`, cx, top + (small ? 16 : 22), small ? 16 : 22, '#ffffff', 'center', 900);
       if (w.waveState === 'fight' && !w.isBossWave) {
         const ww = small ? 120 : 200;
         this.bar(ctx, cx - ww / 2, top + (small ? 22 : 30), ww, 4, w.waveT / w.waveDuration, '#00f0ff');

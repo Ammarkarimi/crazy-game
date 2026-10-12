@@ -1,6 +1,7 @@
 'use strict';
 /* Packs the browser build into dist/hyperchaos-web.zip, ready to upload to
    itch.io (kind: HTML), Newgrounds, CrazyGames, Poki, GameDistribution, etc.
+   Pass --demo for a free demo build that ends after wave 5.
    Zero dependencies: writes a standard (stored) ZIP archive. */
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +9,8 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const INCLUDE = ['index.html', 'manifest.webmanifest', 'css', 'src', 'assets'];
 const OUT_DIR = path.join(ROOT, 'dist');
-const OUT = path.join(OUT_DIR, 'hyperchaos-web.zip');
+const DEMO = process.argv.includes('--demo');
+const OUT = path.join(OUT_DIR, DEMO ? 'hyperchaos-demo-web.zip' : 'hyperchaos-web.zip');
 
 const CRC_TABLE = new Uint32Array(256).map((_, n) => {
   let c = n;
@@ -33,7 +35,10 @@ const files = INCLUDE.flatMap(f => walk(f, []));
 const locals = [], centrals = [];
 let offset = 0;
 for (const name of files) {
-  const data = fs.readFileSync(path.join(ROOT, name));
+  let data = fs.readFileSync(path.join(ROOT, name));
+  if (DEMO && name === 'index.html') {
+    data = Buffer.from(data.toString('utf8').replace('<script src="src/util.js">', '<script>window.HYPERCHAOS_DEMO = true;</script>\n  <script src="src/util.js">'));
+  }
   const nameBuf = Buffer.from(name, 'utf8');
   const crc = crc32(data);
   const local = Buffer.alloc(30);

@@ -394,6 +394,7 @@ function updateWaves(dt) {
     W.clearT -= dt;
     if (W.clearT <= 0) {
       if (W.mode !== 'endless' && W.wave >= STANDARD_WAVES) { Game.endRun(true); return; }
+      if (DEMO_MODE && W.wave >= DEMO_WAVES) { Game.endRun(true); return; }
       startWave(W.wave + 1);
     }
     return;

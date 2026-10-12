@@ -61,6 +61,8 @@ marketing/            Generated cover, capsules and 1920x1080 screenshots
 npm run build:web        # -> dist/hyperchaos-web.zip
 ```
 
+For a free demo that ends after wave 5 (Endless and Daily locked), run `npm run build:demo`, which writes `dist/hyperchaos-demo-web.zip`.
+
 Upload the zip to itch.io as **"This file will be played in the browser"**. Set the viewport to 1280x720 and tick *Fullscreen button* and *Mobile friendly*.
 
 ### 2. Desktop builds (Steam, itch.io downloadable, your own store)
@@ -87,7 +89,7 @@ npm test                 # automated QA run through every event and boss
 
 | Store | Notes | Suggested price |
 |---|---|---|
-| **itch.io** | Instant, free to list, you choose the revenue share. Offer the web build as a demo (waves 1-5) and sell the desktop download. | $3.99 - $4.99 |
+| **itch.io** | Instant, free to list, you choose the revenue share. Offer the free web demo (`npm run build:demo`) and sell the desktop download. | $3.99 - $4.99 |
 | **Steam** | $100 Steam Direct fee per game. Use the Electron build. Wishlists before launch are key. | $4.99 |
 | **Web portals** (CrazyGames, Poki, GameDistribution) | Ad revenue share rather than sales. Upload the web zip. | Free + ads |
 | **Mobile** | Wrap with Capacitor or Cordova; touch controls are built in. | $1.99 or free + IAP |

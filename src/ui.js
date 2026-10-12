@@ -118,7 +118,18 @@ const UI = {
     for (const e of document.querySelectorAll('.shards')) e.textContent = fmt(Save.data.shards);
   },
 
+  demoLocked() {
+    Sound.play('deny');
+    this.toast('DEMO', 'Full game only', 'Unlock Endless, Daily Chaos and all 20 waves in the full version.');
+  },
+
   refreshTitle() {
+    if (DEMO_MODE) {
+      document.getElementById('dailyInfo').textContent = 'FULL GAME';
+      document.getElementById('endlessInfo').textContent = 'FULL GAME';
+      document.getElementById('version').textContent = 'v' + VERSION + ' DEMO';
+      return;
+    }
     const d = Save.data.daily;
     document.getElementById('dailyInfo').textContent = d.key === todayKey() && d.played ? 'BEST ' + fmt(d.best) : 'NEW';
     const be = Save.data.stats.bestEndlessWave;
@@ -158,8 +169,9 @@ const UI = {
         if (!Save.data.seenHowTo) { Save.data.seenHowTo = true; Save.save(); }
         break;
       case 'play': Sound.play('select'); this.hangarMode = 'standard'; this.show('hangar'); break;
-      case 'endless': Sound.play('select'); this.hangarMode = 'endless'; this.show('hangar'); break;
+      case 'endless': if (DEMO_MODE) { this.demoLocked(); return; } Sound.play('select'); this.hangarMode = 'endless'; this.show('hangar'); break;
       case 'daily': {
+        if (DEMO_MODE) { this.demoLocked(); return; }
         Sound.play('select');
         const ship = SHIPS[hashString('ship' + todayKey()) % SHIPS.length];
         Game.startRun('daily', ship.id);
@@ -232,7 +244,7 @@ const UI = {
 
   /* ---------------- hangar ---------------- */
   buildHangar() {
-    const modeNames = { standard: 'STANDARD · Survive 20 waves', endless: 'ENDLESS · No limits, no mercy' };
+    const modeNames = { standard: DEMO_MODE ? 'DEMO · Survive ' + DEMO_WAVES + ' waves' : 'STANDARD · Survive 20 waves', endless: 'ENDLESS · No limits, no mercy' };
     document.getElementById('hangarMode').textContent = modeNames[this.hangarMode] || '';
     const list = document.getElementById('shipList');
     list.innerHTML = '';
@@ -429,11 +441,13 @@ const UI = {
   },
 
   showGameOver(r) {
-    document.getElementById('goTitle').textContent = r.victory ? 'VICTORY!' : 'GAME OVER';
+    const demoDone = DEMO_MODE && r.victory;
+    document.getElementById('goTitle').textContent = demoDone ? 'DEMO COMPLETE!' : r.victory ? 'VICTORY!' : 'GAME OVER';
     document.getElementById('goTitle').style.color = r.victory ? 'var(--yel)' : '';
     const modeTxt = { standard: 'Standard', endless: 'Endless', daily: 'Daily Chaos ' + todayKey() }[W.mode];
     document.getElementById('goSub').textContent =
-      `${modeTxt} · ${W.ship.name} · Wave ${W.wave} · Level ${W.level}` + (r.isNewBest ? '  ·  NEW BEST SCORE!' : r.rank === 0 ? '' : '');
+      demoDone ? 'Thanks for playing! 15 more waves, 3 more bosses, Endless and Daily Chaos await in the full game.'
+        : `${modeTxt} · ${W.ship.name} · Wave ${W.wave} · Level ${W.level}` + (r.isNewBest ? '  ·  NEW BEST SCORE!' : '');
     const stats = [
       ['SCORE', fmt(W.score)], ['KILLS', fmt(W.kills)], ['MAX COMBO', W.maxCombo],
       ['TIME', fmtTime(W.realT)], ['DAMAGE DEALT', fmt(W.stats.damage)], ['BOSSES', W.bossKills],
@@ -441,7 +455,7 @@ const UI = {
     ];
     document.getElementById('goStats').innerHTML = stats.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
     document.getElementById('goShards').textContent = fmt(r.earned);
-    document.getElementById('btnContinue').hidden = !(r.victory && W.mode !== 'endless');
+    document.getElementById('btnContinue').hidden = !(r.victory && W.mode !== 'endless') || DEMO_MODE;
     this.show('gameover');
   },
 

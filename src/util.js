@@ -4,6 +4,9 @@
    ========================================================================== */
 
 const VERSION = '1.0.0';
+/* Demo builds (npm run build:web -- --demo) end after DEMO_WAVES and lock Endless/Daily. */
+const DEMO_MODE = !!window.HYPERCHAOS_DEMO;
+const DEMO_WAVES = 5;
 const STUDIO_NAME = 'ammarkarimi'; // shown in the credits screen - change to your studio name
 const TAU = Math.PI * 2;
 

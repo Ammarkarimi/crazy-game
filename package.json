@@ -11,6 +11,7 @@
     "start": "node tools/serve.js",
     "desktop": "electron . --windowed",
     "build:web": "node tools/build-web.js",
+    "build:demo": "node tools/build-web.js --demo",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
