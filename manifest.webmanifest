@@ -1,0 +1,13 @@
+{
+  "name": "HYPERCHAOS",
+  "short_name": "HYPERCHAOS",
+  "description": "Neon arena roguelite. Survive 20 waves of escalating madness.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05010f",
+  "theme_color": "#05010f",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

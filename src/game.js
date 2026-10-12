@@ -598,7 +598,7 @@ const Game = {
     const ship = SHIPS.find(s => s.id === shipId) || SHIPS[0];
     const m = Save.data.meta;
     W = {
-      mode, seed, ship,
+      mode, startMode: mode, seed, ship,
       runRng: new RNG(seed ^ 0xa5a5a5),
       eventRng: new RNG(seed ^ 0x5eed),
       t: 0, realT: 0,
@@ -654,6 +654,7 @@ const Game = {
     Sound.setMuffle(false);
     UI.hideAll();
     Input.keyHits.clear();
+    Input.hits.clear();
   },
 
   computeShards(victory) {
