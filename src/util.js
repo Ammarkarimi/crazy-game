@@ -4,6 +4,7 @@
    ========================================================================== */
 
 const VERSION = '1.0.0';
+const STUDIO_NAME = 'ammarkarimi'; // shown in the credits screen - change to your studio name
 const TAU = Math.PI * 2;
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);

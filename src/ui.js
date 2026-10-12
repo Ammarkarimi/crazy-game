@@ -73,7 +73,7 @@ const UI = {
     root.addEventListener('change', e => { if (e.target.dataset.key) Save.save(); });
 
     document.getElementById('version').textContent = 'v' + VERSION;
-    document.getElementById('creditsStudio').textContent = 'Made with neon and caffeine';
+    document.getElementById('creditsStudio').textContent = STUDIO_NAME;
     if (window.hyperchaosDesktop) document.getElementById('btnQuit').hidden = false;
   },
 
