@@ -4,6 +4,12 @@
 
 ![HYPERCHAOS](marketing/screenshot-4-rainbow-mode.png)
 
+## Play now
+
+- **Play in your browser:** https://hyperchaos.vercel.app (on phones and tablets, install it from the menu or with *Add to Home Screen*; it then works offline)
+- **Download for Windows, Mac or Linux:** [latest release](https://github.com/Ammarkarimi/crazy-game/releases/latest)
+- **Privacy policy:** https://hyperchaos.vercel.app/privacy.html
+
 ## Made for kids
 
 | | |
