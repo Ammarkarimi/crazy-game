@@ -78,9 +78,10 @@ Run `npm run marketing` to regenerate them after visual changes.
 - [ ] Set `STUDIO_NAME` (src/util.js) and the `appId` / `copyright` in package.json
 - [ ] Trademark search for the game name
 - [ ] Complete the IARC age-rating questionnaire (expect PEGI 3 / Everyone)
-- [ ] Write a short privacy policy page ("we collect no data"); kids' categories on most stores require one
+- [x] Privacy policy page (`privacy.html`, live on the website); kids' categories on most stores require one
+- [x] Website with installable, offline app (Vercel)
+- [x] Automatic Windows / macOS / Linux builds (GitHub Actions → GitHub Release)
 - [ ] Build the free web demo (`npm run build:demo`) and put it on itch.io and kids' web portals
-- [ ] Build desktop versions on each OS (`npm run build:win` / `build:mac` / `build:linux`)
 - [ ] Code-sign the Windows and macOS builds
 - [ ] Record a 30-second trailer: Grumpies turning happy, Rainbow Mode, a Big Grumpy, the Sticker Book
 - [ ] Share with parenting communities, homeschool groups and family YouTubers/streamers

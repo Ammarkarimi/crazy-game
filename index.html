@@ -7,7 +7,15 @@
   <meta name="description" content="HYPERCHAOS - a super silly space adventure for kids and grown-ups. Fly your rocket, cheer up the Grumpies with sparkle bubbles and collect stickers!">
   <meta name="theme-color" content="#0d0630">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HYPERCHAOS">
+  <meta property="og:title" content="HYPERCHAOS: Super Silly Space Adventure">
+  <meta property="og:description" content="Fly your rocket, cheer up the Grumpies and collect stickers! A happy, non-violent space game for kids.">
+  <meta property="og:image" content="assets/icons/screenshot-wide.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -42,6 +50,7 @@
         <button class="btn" data-act="records"><i class="emo">🏆</i>MY SCORES</button>
         <button class="btn" data-act="settings"><i class="emo">⚙️</i>SETTINGS</button>
         <button class="btn" data-act="howto"><i class="emo">❓</i>HOW TO PLAY</button>
+        <button class="btn blue" data-act="install" id="btnInstall" hidden><i class="emo">📲</i>INSTALL APP</button>
         <button class="btn danger" data-act="quit" id="btnQuit" hidden><i class="emo">👋</i>QUIT</button>
       </div>
       <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
@@ -171,6 +180,7 @@
   </div>
 
   <script src="src/util.js"></script>
+  <script src="src/pwa.js"></script>
   <script src="src/save.js"></script>
   <script src="src/audio.js"></script>
   <script src="src/input.js"></script>

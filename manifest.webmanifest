@@ -1,18 +1,23 @@
 {
-  "name": "HYPERCHAOS",
+  "name": "HYPERCHAOS: Super Silly Space Adventure",
   "short_name": "HYPERCHAOS",
   "description": "A super silly space adventure for kids. Fly your rocket, cheer up the Grumpies and collect stickers!",
-  "start_url": "./index.html",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
   "background_color": "#0d0630",
   "theme_color": "#0d0630",
+  "categories": ["games", "kids", "entertainment"],
   "icons": [
-    {
-      "src": "assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "assets/icons/screenshot-wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Cheer up the Grumpies!" }
   ]
 }

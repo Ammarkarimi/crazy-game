@@ -53,9 +53,14 @@ src/player.js         Ship, weapons, orbitals, drones
 src/game.js           Main loop, waves, combat, pickups, hazards, rendering
 src/hud.js            In-game HUD
 src/ui.js             Menus
+src/pwa.js            Offline cache + INSTALL APP button (web only)
 src/main.js           Boot
+privacy.html          Privacy policy page
+assets/icons/         App icons for phones, tablets and browsers
 electron/             Desktop wrapper (Steam / itch app / direct download)
-tools/                Dev server, web zipper, smoke test, store-asset generator
+tools/                Dev server, web zipper, site builder, smoke test, store-asset generator
+vercel.json           Website hosting config
+.github/workflows/    Automatic desktop builds -> GitHub Release
 marketing/            Generated cover, capsules and 1920x1080 screenshots
 ```
 
@@ -71,7 +76,25 @@ For a free demo that ends after wave 5 (Endless and Daily locked), run `npm run 
 
 Upload the zip to itch.io as **"This file will be played in the browser"**. Set the viewport to 1280x720 and tick *Fullscreen button* and *Mobile friendly*.
 
-### 2. Desktop builds (Steam, itch.io downloadable, your own store)
+### 2. Website and installable app (Vercel)
+
+The game is hosted on Vercel, which redeploys it automatically on every push. `vercel.json` runs `npm run build:site`, which copies only the game files into `site/` and adds `sw.js`, an offline cache.
+
+Players can install it like a real app:
+- **Android / Chrome / Edge:** tap **📲 INSTALL APP** in the main menu, or *Install app* in the browser menu
+- **iPhone / iPad:** Safari → Share → **Add to Home Screen**
+
+Once installed it opens fullscreen with its own icon and plays **offline**. The privacy policy page that kids' app stores ask for is at `/privacy.html`.
+
+```bash
+npm run build:site        # -> site/  (full game)
+npm run build:site:demo   # -> site/  (free demo instead)
+node tools/serve.js site  # preview it at http://localhost:8080
+```
+
+To publish only the free demo on the website (and sell the full game elsewhere), add the environment variable `HYPERCHAOS_DEMO=1` in the Vercel project settings and redeploy.
+
+### 3. Desktop apps (Steam, itch.io downloadable, your own store)
 
 ```bash
 npm install
@@ -81,9 +104,18 @@ npm run build:mac        # -> release/  .dmg                             (run on
 npm run build:linux      # -> release/  .AppImage
 ```
 
+**Automatic builds:** the *Build desktop apps* GitHub Actions workflow builds Windows (installer + portable), macOS (universal .dmg) and Linux (.AppImage) on GitHub's machines and attaches them to a GitHub Release. Run it from the **Actions** tab, or push a version tag:
+
+```bash
+npm version 1.1.0        # bumps package.json and creates the v1.1.0 tag
+git push --follow-tags
+```
+
+The builds are not code-signed, so Windows SmartScreen and macOS Gatekeeper show a warning the first time (*More info → Run anyway* on Windows; *right-click → Open* on Mac). Before selling desktop copies, add signing certificates (see the launch checklist in `STORE_PAGE.md`).
+
 The desktop build starts fullscreen. F11 or Alt+Enter toggles it, and a **QUIT** button appears in the main menu.
 
-### 3. Regenerate store art after changes
+### 4. Regenerate store art after changes
 
 ```bash
 npm i -D playwright && npx playwright install chromium   # once

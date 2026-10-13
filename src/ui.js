@@ -293,6 +293,7 @@ const UI = {
       case 'menu': Sound.play('back'); Game.quitToMenu(); break;
       case 'retry': Sound.play('select'); Game.startRun(W.startMode, W.ship.id); break;
       case 'continueEndless': Sound.play('select'); Game.continueEndless(); break;
+      case 'install': Sound.play('select'); PWA.install(); break;
       case 'quit': if (window.hyperchaosDesktop) window.hyperchaosDesktop.quit(); break;
     }
   },

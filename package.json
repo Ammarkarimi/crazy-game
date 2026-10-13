@@ -16,7 +16,9 @@
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
     "test": "node tools/smoke-test.js",
-    "marketing": "node tools/marketing.js"
+    "marketing": "node tools/marketing.js",
+    "build:site": "node tools/build-site.js",
+    "build:site:demo": "node tools/build-site.js --demo"
   },
   "devDependencies": {
     "electron": "^33.2.0",
@@ -52,7 +54,12 @@
     },
     "mac": {
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
       ],
       "category": "public.app-category.games",
       "icon": "build/icon.png"

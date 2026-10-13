@@ -1,0 +1,92 @@
+name: Build desktop apps
+
+# Builds the Windows, macOS and Linux apps and publishes them as a GitHub Release.
+# Runs when a version tag (v1.0.0, v1.1.0...) is pushed, or by hand from the Actions tab.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build app
+        run: npx electron-builder --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hyperchaos-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.AppImage
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: ver
+        run: echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Name the downloads
+        run: |
+          cd out
+          v=${{ steps.ver.outputs.tag }}
+          for f in *; do
+            case "$f" in
+              *Setup*.exe)   mv "$f" "HYPERCHAOS-${v}-Windows-Setup.exe" ;;
+              *.exe)         mv "$f" "HYPERCHAOS-${v}-Windows-Portable.exe" ;;
+              *.dmg)         mv "$f" "HYPERCHAOS-${v}-macOS.dmg" ;;
+              *.AppImage)    mv "$f" "HYPERCHAOS-${v}-Linux.AppImage" ;;
+            esac
+          done
+          ls -la
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || steps.ver.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: HYPERCHAOS ${{ github.ref_type == 'tag' && github.ref_name || steps.ver.outputs.tag }}
+          body: |
+            **HYPERCHAOS: Super Silly Space Adventure** 🚀
+
+            | Computer | Download |
+            |---|---|
+            | Windows 10/11 (installer) | `HYPERCHAOS-*-Windows-Setup.exe` |
+            | Windows (no install, just run) | `HYPERCHAOS-*-Windows-Portable.exe` |
+            | Mac (Apple Silicon and Intel) | `HYPERCHAOS-*-macOS.dmg` |
+            | Linux | `HYPERCHAOS-*-Linux.AppImage` (make it executable, then run) |
+
+            Play in the browser and install it on phones and tablets from the web version.
+          files: out/*
+          fail_on_unmatched_files: true
