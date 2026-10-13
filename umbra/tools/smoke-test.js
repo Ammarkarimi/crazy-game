@@ -13,7 +13,39 @@ const ok = m => console.log('  ok  ' + m);
   page.on('pageerror', e => errors.push(e.message + ' ' + (e.stack || '').split('\n').slice(1, 3).join(' ')));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(GAME_URL);
-  await page.evaluate(() => { localStorage.clear(); Save.load(); Save.data.seen.howto = true; });
+
+  // ---- brand-new player: the tutorial starts by itself and is played with real keys ----
+  await page.evaluate(() => { localStorage.clear(); Save.load(); });
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(300);
+  if (!(await page.evaluate(() => !!(Game.match && Game.match.tutorial)))) fail('fresh boot should start the tutorial');
+  const step = () => page.evaluate(() => Game.match && Game.match.tutorial ? Game.match.tutorial.i : -1);
+  const until = async (n, ms) => { const t = Date.now(); while (Date.now() - t < ms) { if (await step() >= n) return true; await page.waitForTimeout(100); } return false; };
+  const tut = [];
+  await page.keyboard.down('KeyD'); tut.push(await until(1, 8000)); await page.keyboard.up('KeyD');
+  for (let i = 0; i < 4 && (await step()) < 2; i++) { for (let k = 0; k < 3; k++) { await page.keyboard.press('KeyJ'); await page.waitForTimeout(140); } await page.waitForTimeout(500); }
+  tut.push(await until(2, 2000));
+  for (let i = 0; i < 5 && (await step()) < 3; i++) { await page.keyboard.press('KeyK'); await page.waitForTimeout(500); }
+  tut.push(await until(3, 2000));
+  await page.keyboard.down('KeyA'); tut.push(await until(4, 9000)); await page.keyboard.up('KeyA');
+  for (let i = 0; i < 8 && (await step()) < 5; i++) { await page.keyboard.press('KeyU'); await page.waitForTimeout(700); }
+  tut.push(await until(5, 2000));
+  for (let i = 0; i < 8 && (await step()) < 6; i++) { await page.keyboard.press('KeyW'); await page.waitForTimeout(160); await page.keyboard.press('KeyJ'); await page.waitForTimeout(700); }
+  tut.push(await until(6, 2000));
+  for (let i = 0; i < 6 && (await step()) < 7; i++) { await page.keyboard.press('KeyI'); await page.waitForTimeout(900); }
+  tut.push(await until(7, 3000));
+  for (let i = 0; i < 80 && (await page.evaluate(() => UI.current)) !== 'results'; i++) { await page.keyboard.down('KeyD'); await page.waitForTimeout(60); await page.keyboard.up('KeyD'); await page.keyboard.press(i % 3 ? 'KeyJ' : 'KeyK'); await page.waitForTimeout(150); }
+  await page.waitForTimeout(400);
+  tut.push((await page.evaluate(() => UI.current)) === 'results');
+  if (tut.includes(false)) fail('tutorial steps ' + JSON.stringify(tut)); else ok('tutorial: move, combo, kick, block, guard break, air attack, magic, knockout - all with real keys');
+  await page.click('[data-act=menu]'); await page.waitForTimeout(700);
+  const giftShown = await page.evaluate(() => !!document.querySelector('.gate [data-act=claimDaily]'));
+  const before = await page.evaluate(() => Save.data.coins);
+  if (giftShown) await page.click('[data-act=claimDaily]');
+  const after = await page.evaluate(() => Save.data.coins);
+  if (!giftShown || after !== before + 100) fail(`daily gift (shown ${giftShown}, ${before} -> ${after})`); else ok('daily gift shown and claimed (+100)');
+
+  await page.evaluate(() => { localStorage.clear(); Save.load(); Save.data.seen.howto = true; Save.data.seen.tutorial = true; Save.data.daily.last = new Date().toDateString(); UI.show('boot', false); });
   await page.keyboard.press('Enter');
   await page.waitForTimeout(400);
   if (await page.evaluate(() => UI.current) !== 'title') fail('title screen'); else ok('boot -> title');
@@ -38,6 +70,9 @@ const ok = m => console.log('  ok  ' + m);
     return { owned: Save.data.owned.katana, eq: Save.data.loadouts.kage.weapon, coins: Save.data.coins };
   });
   if (forge.owned !== 2 || forge.eq !== 'katana' || forge.coins !== 5000 - 800 - 290) fail('forge buy/upgrade ' + JSON.stringify(forge)); else ok('forge buy + upgrade + equip');
+
+  const nx = await page.evaluate(() => { UI.home(); return document.getElementById('nextInfo').innerText; });
+  if (!/Old Hiro/.test(nx)) fail('next duel label ' + nx); else ok('NEXT DUEL points at the first unbeaten rival: ' + nx);
 
   // real keyboard control in a duel
   await page.evaluate(() => { UI.rivalSel = 'kenta'; Game.startDuel('kenta', 3, 0); });

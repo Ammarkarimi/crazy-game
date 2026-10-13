@@ -45,7 +45,8 @@
     <section id="scr-title" class="screen">
       <div class="logo small"><div class="mark">UMBRA</div><div class="sub">DUEL OF SHADOWS</div></div>
       <div class="menu">
-        <button class="btn primary" data-act="rivals">FIGHT <small>choose your rival</small></button>
+        <button class="btn primary" data-act="nextDuel" id="btnNext">NEXT DUEL <small id="nextInfo"></small></button>
+        <button class="btn" data-act="rivals">ALL RIVALS <small>choose any rival</small></button>
         <button class="btn" data-act="forge">FORGE <small>buy &amp; upgrade gear</small></button>
         <button class="btn" data-act="dojo">DOJO <small>fighters</small></button>
         <button class="btn" data-act="versus">VERSUS <small>2 players</small></button>
@@ -116,7 +117,7 @@
       <div class="panel wide-panel">
         <h2>HOW TO PLAY</h2>
         <div class="howto" id="howtoBody"></div>
-        <div class="row"><button class="btn primary" data-act="back">GOT IT</button></div>
+        <div class="row"><button class="btn" data-act="tutorial">PLAY THE TUTORIAL</button><button class="btn primary" data-act="back">GOT IT</button></div>
       </div>
     </section>
 
@@ -129,6 +130,7 @@
     </section>
 
     <div id="toasts"></div>
+    <div id="rotate"><div><div class="rot-icon">&#10227;</div>Turn your device sideways to fight</div></div>
   </div>
 
   <script src="src/util.js"></script>
@@ -140,6 +142,7 @@
   <script src="src/render.js"></script>
   <script src="src/fighter.js"></script>
   <script src="src/ai.js"></script>
+  <script src="src/tutorial.js"></script>
   <script src="src/fx.js"></script>
   <script src="src/stage.js"></script>
   <script src="src/game.js"></script>

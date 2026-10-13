@@ -16,7 +16,8 @@ class Stage {
     });
     this.items = this.buildItems(R);
     this.amb = [];
-    for (let i = 0; i < 70; i++) this.amb.push(this.newAmb(true));
+    const n = def.particles === 'mist' ? 12 : 70;
+    for (let i = 0; i < n; i++) this.amb.push(this.newAmb(true));
     this.time = 0;
   }
 
@@ -61,6 +62,57 @@ class Stage {
     return a;
   }
 
+  /* Static screen-space layers are rendered once per screen size and blitted every frame. */
+  cache(cam) {
+    const d = this.def, W = cam.W, H = cam.H, gy = cam.groundY;
+    const key = W + 'x' + H + ':' + gy;
+    if (this.cacheKey === key) return this.layers;
+    this.cacheKey = key;
+    const mk = (w, h, fn) => { const c = document.createElement('canvas'); c.width = Math.max(1, w); c.height = Math.max(1, h); fn(c.getContext('2d')); return c; };
+    const L = this.layers = {};
+    L.sky = mk(W, gy + 2, ctx => {
+      const sky = ctx.createLinearGradient(0, 0, 0, gy);
+      sky.addColorStop(0, d.sky[0]); sky.addColorStop(0.6, d.sky[1]); sky.addColorStop(1, d.sky[2]);
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, gy + 2);
+      const cx = W * 0.68, cy = gy * 0.32, r = Math.min(W, H) * (d.sun ? 0.11 : 0.075);
+      const glow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4);
+      glow.addColorStop(0, rgba(d.accent, d.sun ? 0.55 : 0.35)); glow.addColorStop(1, rgba(d.accent, 0));
+      ctx.fillStyle = glow; ctx.fillRect(cx - r * 4, cy - r * 4, r * 8, r * 8);
+      ctx.fillStyle = d.id === 'gate' ? '#ff5a5a' : d.sun ? '#fff1c8' : mix(d.accent, '#ffffff', 0.5);
+      ctx.globalAlpha = 0.92; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+    });
+    L.haze = mk(W, Math.ceil(gy * 0.5), ctx => {
+      const hz = ctx.createLinearGradient(0, 0, 0, gy * 0.5);
+      hz.addColorStop(0, rgba(d.sky[2], 0)); hz.addColorStop(1, rgba(d.sky[2], 0.35));
+      ctx.fillStyle = hz; ctx.fillRect(0, 0, W, gy * 0.5);
+    });
+    L.ground = mk(W, H - gy, ctx => {
+      const gg = ctx.createLinearGradient(0, 0, 0, H - gy);
+      gg.addColorStop(0, mix(d.ground, d.mid, 0.6)); gg.addColorStop(0.15, d.ground); gg.addColorStop(1, mix(d.ground, '#000000', 0.5));
+      ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H - gy);
+      ctx.fillStyle = rgba(d.accent, 0.18); ctx.fillRect(0, 0, W, Math.max(1, cam.z * 1.5));
+    });
+    const fh = Math.ceil(H * 0.18 + 10);
+    L.fog = mk(W, fh, ctx => {
+      const fg = ctx.createLinearGradient(0, 0, 0, fh);
+      fg.addColorStop(0, rgba(d.sky[2], 0)); fg.addColorStop(1, rgba(d.sky[2], d.particles === 'mist' ? 0.4 : 0.2));
+      ctx.fillStyle = fg; ctx.fillRect(0, 0, W, fh);
+    });
+    L.vignette = mk(W, H, ctx => {
+      const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+      v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
+      ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+    });
+    const sprite = (size, inner, outer) => mk(size, size, ctx => {
+      const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      g.addColorStop(0, inner); g.addColorStop(1, outer);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
+    });
+    L.mist = sprite(128, rgba(d.sky[2], 0.2), rgba(d.sky[2], 0));
+    L.firefly = sprite(32, 'rgba(225,255,190,1)', 'rgba(200,255,150,0)');
+    return L;
+  }
+
   layerT(cam, f) {
     const zl = cam.z * (0.5 + 0.5 * f);
     return { zl, ox: cam.W / 2 - cam.x * f * zl, oy: cam.groundY };
@@ -69,18 +121,9 @@ class Stage {
   drawBack(ctx, cam) {
     this.time++;
     const d = this.def, W = cam.W, H = cam.H, gy = cam.groundY;
+    const L = this.cache(cam);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const sky = ctx.createLinearGradient(0, 0, 0, gy);
-    sky.addColorStop(0, d.sky[0]); sky.addColorStop(0.6, d.sky[1]); sky.addColorStop(1, d.sky[2]);
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, gy + 2);
-
-    // moon or sun
-    const cx = W * 0.68 - cam.x * cam.z * 0.03, cy = gy * 0.32, r = Math.min(W, H) * (d.sun ? 0.11 : 0.075);
-    const glow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4);
-    glow.addColorStop(0, rgba(d.accent, d.sun ? 0.55 : 0.35)); glow.addColorStop(1, rgba(d.accent, 0));
-    ctx.fillStyle = glow; ctx.fillRect(cx - r * 4, cy - r * 4, r * 8, r * 8);
-    ctx.fillStyle = d.id === 'gate' ? '#ff5a5a' : d.sun ? '#fff1c8' : mix(d.accent, '#ffffff', 0.5);
-    ctx.globalAlpha = 0.92; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
+    ctx.drawImage(L.sky, 0, 0);
 
     // mountain ridges
     for (let k = 0; k < 2; k++) {
@@ -94,9 +137,7 @@ class Stage {
     }
     // haze over the ridges
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const hz = ctx.createLinearGradient(0, gy * 0.5, 0, gy);
-    hz.addColorStop(0, rgba(d.sky[2], 0)); hz.addColorStop(1, rgba(d.sky[2], 0.35));
-    ctx.fillStyle = hz; ctx.fillRect(0, gy * 0.5, W, gy * 0.5);
+    ctx.drawImage(L.haze, 0, Math.floor(gy * 0.5));
 
     // mid layer structures
     const sorted = this.items.filter(i => !i.fore).sort((a, b) => a.f - b.f);
@@ -109,10 +150,7 @@ class Stage {
 
     // ground
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const gg = ctx.createLinearGradient(0, gy, 0, H);
-    gg.addColorStop(0, mix(d.ground, d.mid, 0.6)); gg.addColorStop(0.15, d.ground); gg.addColorStop(1, mix(d.ground, '#000000', 0.5));
-    ctx.fillStyle = gg; ctx.fillRect(0, gy, W, H - gy);
-    ctx.fillStyle = rgba(d.accent, 0.18); ctx.fillRect(0, gy, W, Math.max(1, cam.z * 1.5));
+    ctx.drawImage(L.ground, 0, gy);
     // floor planks / stones with perspective
     ctx.strokeStyle = rgba(d.accent, 0.05); ctx.lineWidth = 1;
     for (let i = -20; i <= 20; i++) {
@@ -128,9 +166,7 @@ class Stage {
       }
     }
     // ground fog
-    const fg = ctx.createLinearGradient(0, gy - H * 0.18, 0, gy + 10);
-    fg.addColorStop(0, rgba(d.sky[2], 0)); fg.addColorStop(1, rgba(d.sky[2], d.particles === 'mist' ? 0.4 : 0.2));
-    ctx.fillStyle = fg; ctx.fillRect(0, gy - H * 0.18, W, H * 0.18 + 10);
+    ctx.drawImage(L.fog, 0, Math.round(gy - H * 0.18));
   }
 
   drawItem(ctx, it, col) {
@@ -287,8 +323,8 @@ class Stage {
         case 'fireflies': {
           a.x += Math.sin(a.ph) * 0.0006; a.y += Math.cos(a.ph * 0.7) * 0.0005;
           const al = (Math.sin(a.ph * 3) * 0.5 + 0.5);
-          ctx.fillStyle = `rgba(210,255,170,${al * 0.9})`; ctx.shadowColor = '#c8ff9a'; ctx.shadowBlur = 8;
-          ctx.beginPath(); ctx.arc(x, y, 1.8 * a.s, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
+          const r = 7 * a.s * cam.uiScale;
+          ctx.globalAlpha = al * 0.9; ctx.drawImage(this.layers.firefly, x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1;
           break;
         }
         case 'petals':
@@ -313,18 +349,13 @@ class Stage {
           break;
         case 'mist': {
           a.x += 0.0004 * a.v;
-          const r = 140 * a.s * cam.uiScale;
-          const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-          g.addColorStop(0, rgba(d.sky[2], 0.12)); g.addColorStop(1, rgba(d.sky[2], 0));
-          ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+          const r = 190 * a.s * cam.uiScale;
+          ctx.drawImage(this.layers.mist, x - r, y - r * 0.6, r * 2, r * 1.2);
           break;
         }
       }
       if (a.y > 1.08 || a.y < -0.08 || a.x > 1.4) Object.assign(a, this.newAmb(false));
     }
-    // vignette
-    const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
-    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(this.cache(cam).vignette, 0, 0);
   }
 }

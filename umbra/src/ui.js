@@ -145,6 +145,18 @@ const UI = {
       case 'rivals': case 'forge': case 'dojo': case 'versus': case 'settings': case 'howto': case 'achievements':
         Sound.play('select'); this.show(a); break;
       case 'training': Sound.play('select'); Game.startTraining(); break;
+      case 'tutorial': Sound.play('select'); Game.startTutorial(); break;
+      case 'nextDuel': case 'firstDuel': {
+        const o = Game.nextRival();
+        Sound.play('select'); Game.toMenu(); Game.startDuel(o.id, Save.data.settings.rounds, -1); break;
+      }
+      case 'claimDaily': {
+        const g = Game.dailyGift();
+        if (g) { Game.claimDaily(g); Sound.play('buy'); this.toast(`DAY ${g.day} GIFT CLAIMED`, `+${fmt(g.coins)} coins${g.gems ? ` +${g.gems} gems` : ''}`); }
+        document.querySelectorAll('.gate').forEach(x => x.remove());
+        this.updateWallet(); this.buildTitle();
+        break;
+      }
       case 'back': this.back(); break;
       case 'install': PWA.install(); break;
       case 'quit': if (window.umbraDesktop) window.umbraDesktop.quit(); break;
@@ -187,6 +199,10 @@ const UI = {
 
   /* ---------- title ---------- */
   buildTitle() {
+    const nx = Game.nextRival();
+    $('nextInfo').innerHTML = `vs ${nx.name} · <span style="color:${TIER[nx.tier].color}">${TIER[nx.tier].name}</span>`;
+    const gift = Game.dailyGift();
+    if (gift && !document.querySelector('.gate')) setTimeout(() => this.showDailyGift(gift), 350);
     const d = FIGHTERS.find(f => f.id === Save.data.fighter);
     $('meCard').innerHTML = `<div class="tt">YOUR FIGHTER</div><div class="nm">${d.name}</div><div class="tt">${d.title.toUpperCase()}</div><div class="pw">POWER <b>${this.myPower()}</b></div>`;
   },
@@ -417,11 +433,37 @@ const UI = {
     if (!r.versus) {
       html += `<div class="rewards"><div>${coinsHtml(r.coins)}</div>${r.gems ? `<div>${gemsHtml(r.gems)}</div>` : ''}</div>`;
       if (r.firstWin) html += `<div class="rewards"><span class="first">FIRST VICTORY BONUS</span></div>`;
+      if (r.streak >= 2) html += `<div class="rewards"><span class="first streak">WIN STREAK ×${r.streak} · +${Math.round(r.streakBonus * 100)}% COINS</span></div>`;
       if (!r.won) html += `<div class="sum">Tip: upgrade your gear in the FORGE, or pick a rival closer to your power.</div>`;
       if (r.stats) html += `<div class="sum">BEST COMBO ${r.stats.maxCombo} · HITS ${r.stats.hits} · DAMAGE ${fmt(r.stats.dmgDealt)}</div>`;
     }
-    html += `<div class="menu"><button class="btn primary" data-act="rematch">REMATCH</button>${r.versus ? '' : '<button class="btn" data-act="resToRivals">RIVALS</button><button class="btn" data-act="resToForge">FORGE</button>'}<button class="btn" data-act="menu">MENU</button></div>`;
+    const nx = !r.versus && r.won ? Game.nextRival() : null;
+    const nextBtn = nx && nx.id !== r.rival.id ? `<button class="btn primary" data-act="nextDuel">NEXT: ${nx.name.toUpperCase()}</button>` : '';
+    html += `<div class="menu">${nextBtn}<button class="btn ${nextBtn ? '' : 'primary'}" data-act="rematch">REMATCH</button>${r.versus ? '' : '<button class="btn" data-act="resToRivals">RIVALS</button><button class="btn" data-act="resToForge">FORGE</button>'}<button class="btn" data-act="menu">MENU</button></div>`;
     P.innerHTML = html;
+    this.history = [];
+    this.show('results', false);
+  },
+
+  showDailyGift(g) {
+    if (this.current !== 'title' || document.querySelector('.gate')) return;
+    const days = [100, 150, 200, 250, 300, 400, 500];
+    const gate = el('div', 'gate');
+    gate.innerHTML = `<div class="panel daily"><h2>DAILY GIFT</h2><p class="sum">Come back every day for bigger gifts.</p>
+      <div class="days">${days.map((c, i) => `<div class="day ${i + 1 < g.day ? 'got' : i + 1 === g.day ? 'today' : ''}"><b>DAY ${i + 1}</b>${coinsHtml(c)}${i === 6 ? gemsHtml(5) : (i + 1) % 3 === 0 ? gemsHtml(1) : ''}</div>`).join('')}</div>
+      <div class="row" style="justify-content:center"><button class="btn primary big" data-act="claimDaily">CLAIM</button></div></div>`;
+    document.getElementById('ui').appendChild(gate);
+    Sound.play('coin');
+  },
+
+  showTutorialDone(first) {
+    const nx = Game.nextRival();
+    const P = $('resultPanel');
+    P.innerHTML = `<h2 class="win">TRAINING COMPLETE</h2>
+      <div class="sum">You know the basics. Now prove it.</div>
+      ${first ? `<div class="rewards"><div>${coinsHtml(150)}</div></div>` : ''}
+      <div class="sum">Your first rival: <b style="color:${TIER[nx.tier].color}">${nx.name}</b>, ${nx.title}</div>
+      <div class="menu"><button class="btn primary big" data-act="firstDuel">FIGHT ${nx.name.toUpperCase()}</button><button class="btn" data-act="menu">MENU</button></div>`;
     this.history = [];
     this.show('results', false);
   },
@@ -431,7 +473,8 @@ const UI = {
     const tr = Game.match && Game.match.training;
     $('btnDummy').hidden = !tr;
     if (tr) $('btnDummy').textContent = `DUMMY: ${Game.match.dummyMode.toUpperCase()}`;
-    $('btnForfeit').textContent = tr ? 'LEAVE TRAINING' : 'QUIT MATCH';
+    $('btnForfeit').textContent = Game.match && Game.match.tutorial ? 'SKIP TUTORIAL' : tr ? 'LEAVE TRAINING' : 'QUIT MATCH';
+    if (Game.match && Game.match.tutorial) $('btnDummy').hidden = true;
   },
 
   /* ---------- settings ---------- */

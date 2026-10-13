@@ -27,6 +27,7 @@ class Camera {
 }
 
 let projSerial = 0;
+const COMBO_CALLS = { 3: 'NICE!', 5: 'GREAT COMBO!', 7: 'SAVAGE!', 9: 'UNSTOPPABLE!', 12: 'LEGENDARY!' };
 
 class Match {
   constructor(o) {
@@ -114,7 +115,8 @@ class Match {
       this.timer--;
       if (this.timer <= 0) this.timeUp();
     }
-    if (this.training) {
+    if (this.tutorial && fighting) this.tutorial.update();
+    if (this.training && !(this.tutorial && this.tutorial.final)) {
       for (const f of this.fighters) if (f.hp < f.maxHp && f.status.sinceHit > 90) f.hp = Math.min(f.maxHp, f.hp + f.maxHp * 0.02);
       this.f1.meter = Math.max(this.f1.meter, this.trainingMeter ? 100 : 0);
       if (this.f1.ammo < this.f1.rangedAmmo && this.frame % 90 === 0) this.f1.ammo++;
@@ -274,6 +276,11 @@ class Match {
     if (crit) dmg *= 2;
     const comboing = ['hitstun', 'launched', 'stagger', 'stunned'].includes(def.state);
     att.combo = comboing ? att.combo + 1 : 1;
+    const call = att.isPlayer && !this.sim && COMBO_CALLS[att.combo];
+    if (call) {
+      this.fx.text(att.x, att.y + 250 * att.scale, call, '#ffd84a', 30 + att.combo * 2, 60);
+      if (att.combo >= 5) this.announce(call.replace('!', ''));
+    }
     const scale = Math.max(RULES.comboScaleMin, 1 - (att.combo - 1) * RULES.comboScaleStep);
     dmg *= scale * (1 - def.dr);
     this.damage(def, dmg, att, h.magic ? 'magic' : h.ranged ? 'ranged' : 'melee');
@@ -339,7 +346,7 @@ class Match {
     def.status.sinceHit = 0;
     def.stats.dmgTaken += amt; att.stats.dmgDealt += amt;
     if (def.hp <= 0) {
-      if (this.training) { def.hp = def.maxHp; return; }
+      if (this.training && !(this.tutorial && this.tutorial.final)) { def.hp = def.maxHp; return; }
       def.hp = 0;
       this.ko(def, att, kind);
     }
@@ -518,6 +525,10 @@ class Match {
       const k = clamp(1 - f.y / 400, 0.3, 1);
       ctx.fillStyle = `rgba(0,0,0,${0.5 * k})`;
       ctx.beginPath(); ctx.ellipse(f.x, 0, 52 * f.scale * k, 9 * k, 0, 0, TAU); ctx.fill();
+      // coloured ring so you always know which shadow is you
+      const ring = f === this.f1 ? '#5ad1ff' : this.mode === 'versus' ? '#ffb347' : '#ff4a4a';
+      ctx.strokeStyle = rgba(ring, f === this.f1 || this.mode === 'versus' ? 0.75 : 0.35); ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.ellipse(f.x, 0, 46 * f.scale * k, 8 * k, 0, 0, TAU); ctx.stroke();
     }
     // magic under fighters (telegraphs, ground waves)
     this.drawGroundMagic(ctx);

@@ -30,7 +30,21 @@ const HUD = {
     }
     // banner
     if (M.banner) this.banner(ctx, M, u);
-    if (M.training) this.trainingBox(ctx, M, u);
+    if (M.tutorial) this.tutorialBox(ctx, M, u);
+    else if (M.training) this.trainingBox(ctx, M, u);
+    // "YOU" marker at the start of a duel
+    if (M.round === 1 && (M.phase === 'intro' || (M.phase === 'fight' && M.phaseT < 150)) || M.tutorial) {
+      for (const f of M.fighters) {
+        if (!f.isPlayer) continue;
+        const label = M.mode === 'versus' ? (f === M.f1 ? 'P1' : 'P2') : 'YOU';
+        const [sx, sy] = M.cam.toScreen(f.x, f.y + 225 * f.scale);
+        const bob = Math.sin(M.frame * 0.15) * 4 * u;
+        ctx.font = `700 ${Math.round(16 * u)}px Oswald, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillStyle = f === M.f1 ? '#5ad1ff' : '#ffb347';
+        ctx.fillText(label, sx, sy + bob);
+        ctx.beginPath(); ctx.moveTo(sx - 7 * u, sy + 3 * u + bob); ctx.lineTo(sx + 7 * u, sy + 3 * u + bob); ctx.lineTo(sx, sy + 11 * u + bob); ctx.closePath(); ctx.fill();
+      }
+    }
     ctx.restore();
   },
 
@@ -136,6 +150,38 @@ const HUD = {
       ctx.fillStyle = '#ffffff'; ctx.fillText(b.sub.toUpperCase(), 0, 66 * u);
     }
     ctx.restore();
+  },
+
+  tutorialBox(ctx, M, u) {
+    const T = M.tutorial, W = M.cam.W, done = T.doneT > 0;
+    const w = Math.min(W * 0.86, 640 * u), x = (W - w) / 2, y = 110 * u, h = 92 * u;
+    ctx.fillStyle = 'rgba(8,6,12,0.82)'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = done ? '#7dffa0' : 'rgba(232,192,106,0.7)'; ctx.lineWidth = 2 * u; ctx.strokeRect(x, y, w, h);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `700 ${Math.round(12 * u)}px Oswald, sans-serif`; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillText(`STEP ${Math.min(T.i + 1, T.total)} OF ${T.total}`, W / 2, y + 16 * u);
+    ctx.font = `700 ${Math.round(24 * u)}px Cinzel, serif`; ctx.fillStyle = done ? '#7dffa0' : '#e8c06a';
+    ctx.fillText(done ? 'DONE!' : T.step.title, W / 2, y + 40 * u);
+    // body text with <key> glyphs
+    const parts = T.text().split(/(<[^>]+>)/).filter(Boolean);
+    ctx.font = `400 ${Math.round(16 * u)}px Oswald, sans-serif`;
+    const widths = parts.map(p => p.startsWith('<') ? ctx.measureText(p.slice(1, -1)).width + 14 * u : ctx.measureText(p).width);
+    let tx = W / 2 - widths.reduce((a, b) => a + b, 0) / 2;
+    const ty = y + 70 * u;
+    parts.forEach((p, i) => {
+      if (p.startsWith('<')) {
+        const k = p.slice(1, -1);
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2 * u;
+        ctx.strokeRect(tx + 2 * u, ty - 11 * u, widths[i] - 4 * u, 22 * u);
+        ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.fillText(k, tx + widths[i] / 2, ty);
+      } else { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.textAlign = 'left'; ctx.fillText(p, tx, ty); }
+      tx += widths[i];
+    });
+    // progress pips
+    for (let i = 0; i < T.total; i++) {
+      ctx.fillStyle = i < T.i || (i === T.i && done) ? '#7dffa0' : i === T.i ? '#e8c06a' : 'rgba(255,255,255,0.2)';
+      ctx.fillRect(x + w / 2 - T.total * 9 * u + i * 18 * u, y + h - 6 * u, 14 * u, 3 * u);
+    }
   },
 
   trainingBox(ctx, M, u) {

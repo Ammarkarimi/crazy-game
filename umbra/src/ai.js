@@ -18,6 +18,7 @@ class Brain {
     this.intent = 'idle';
     this.guardUntil = -1; this.guardLow = false;
     this.decided = -1; this.projDecided = new Set();
+    this.attackTimes = []; this.seenSerial = -1; this.prevState = 'idle';
     this.chainSerial = -1; this.airSerial = -1;
     this.oppBlocks = 0; this.myAttacks = 0;
     this.pressQueue = [];
@@ -58,6 +59,21 @@ class Brain {
     const P = this.p;
 
     if (M.phase !== 'fight') return c;
+
+    // ---- read the opponent's habits: how often have they attacked lately? ----
+    if (v.state === 'attack' && v.serial !== this.seenSerial && v.kind !== 'cast') { this.seenSerial = v.serial; this.attackTimes.push(this.now); }
+    while (this.attackTimes.length && this.attackTimes[0] < this.now - 150) this.attackTimes.shift();
+    const pressure = Math.min(1, this.attackTimes.length / 5);
+    const blockP = Math.min(0.95, P.block + pressure * P.read * 0.55);
+
+    // ---- block, then punish: strike back the moment blockstun ends ----
+    const was = this.prevState; this.prevState = me.state;
+    if (was === 'blockstun' && me.isNeutral() && gap < 140 && chance(P.punish * 0.9)) {
+      this.press(chance(0.25) ? 'heavy' : 'attack');
+      return c;
+    }
+    // ---- after taking a hit, smarter fighters raise their guard ----
+    if (was === 'hitstun' && me.isNeutral() && chance(P.read * 0.6)) { this.guardUntil = this.now + 18; this.guardLow = false; }
 
     // ---- keep guarding through blockstun ----
     if (me.state === 'blockstun') { c.h[backKey] = true; if (me.crouchBlock) c.h.down = true; return c; }
@@ -101,12 +117,12 @@ class Brain {
         this.doRoll(me, backKey, fwdKey, c, M);
         return c;
       }
-      if (r < P.block) {
+      if (r < blockP) {
         this.guardUntil = this.now + 22;
         if (v.height === 'low') this.guardLow = chance(P.read);
         else if (v.height === 'overhead') this.guardLow = !chance(P.read);
         else this.guardLow = chance(0.25);
-      } else if (r < P.block + P.roll * 0.5) {
+      } else if (r < blockP + P.roll * 0.5) {
         this.doRoll(me, backKey, fwdKey, c, M);
         return c;
       } else if (gap < 110 && chance(P.punish * 0.25)) {
@@ -254,14 +270,23 @@ class Brain {
 
 /* Training dummy behaviours */
 class DummyBrain {
-  constructor(mode) { this.mode = mode; this.c = newController(); this.t = 0; }
+  constructor(mode) { this.mode = mode; this.c = newController(); this.t = 0; this.lastAttack = -99; }
   update(me, opp, M) {
     const c = this.c; this.t++;
     for (const k in c.h) { c.h[k] = false; c.p[k] = false; }
-    const backKey = opp.x > me.x ? 'left' : 'right';
+    const backKey = opp.x > me.x ? 'left' : 'right', fwdKey = backKey === 'left' ? 'right' : 'left';
+    const d = Math.abs(opp.x - me.x);
+    if (this.mode === 'attack') {
+      // walk up and swing every second or so, so the player can practise blocking
+      const reach = (MOVES.light1.box[1] + me.reach) * me.scale + 12;
+      if (d > reach) c.h[fwdKey] = true;
+      else if (me.isNeutral() && this.t - this.lastAttack > 55) { c.p.attack = true; this.lastAttack = this.t; }
+      return c;
+    }
+    // the dummy walks back to you after being knocked away, so practice never stalls
+    if (d > 112 && this.mode !== 'jump' && me.isNeutral()) { c.h[fwdKey] = true; return c; }
     if (this.mode === 'block') c.h[backKey] = true;
     if (this.mode === 'crouch') { c.h.down = true; c.h[backKey] = true; }
-    if (this.mode === 'attack' && this.t % 90 === 0) c.p.attack = true;
     if (this.mode === 'jump' && this.t % 70 === 0) { c.p.up = true; c.h.up = true; }
     return c;
   }

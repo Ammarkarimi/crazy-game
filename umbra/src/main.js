@@ -39,7 +39,8 @@ const Game = {
     Sound.unlock();
     Music.start('menu');
     UI.history = [];
-    if (!Save.data.seen.howto) { Save.data.seen.howto = true; Save.save(); UI.show('title', false); UI.show('howto'); }
+    // brand-new players go straight into the interactive tutorial fight
+    if (!Save.data.seen.tutorial && !Save.data.seen.howto) { UI.show('title', false); this.startTutorial(); }
     else UI.show('title', false);
   },
 
@@ -85,6 +86,54 @@ const Game = {
     Honors.unlock('versus');
   },
 
+  startTutorial() {
+    this.lastSetup = { kind: 'tutorial' };
+    const fid = Save.data.fighter;
+    const m = new Match({
+      mode: 'training', rounds: 1, stage: STAGES[0],
+      p1: { fighter: fid, gear: Save.gearFor(fid), isPlayer: true, name: FIGHTERS.find(f => f.id === fid).name },
+      p2: { fighter: 'monk', gear: UI.starterGear(FIGHTERS.find(f => f.id === 'monk')), name: 'Training Dummy' },
+      onEnd: () => this.onTutorialDone(),
+    });
+    m.tutorial = new Tutorial(m);
+    this.begin(m, 'menu');
+  },
+
+  onTutorialDone() {
+    const d = Save.data;
+    const first = !d.seen.tutorial;
+    d.seen.tutorial = true; d.seen.howto = true;
+    if (first) d.coins += 150;
+    Save.save();
+    Music.start('win');
+    UI.showTutorialDone(first);
+  },
+
+  /* The next rival worth fighting: the first one not yet beaten, in ladder order. */
+  nextRival() {
+    const open = OPPONENTS.filter(o => !(DEMO_MODE && TIER[o.tier].index > 2));
+    const unbeaten = open.find(o => !Save.record(o.id).wins);
+    if (unbeaten) return unbeaten;
+    const my = UI.myPower();
+    return open.slice().sort((a, b) => Math.abs(powerRating(FIGHTERS.find(f => f.id === a.fighter), a.gear) - my * 1.1) - Math.abs(powerRating(FIGHTERS.find(f => f.id === b.fighter), b.gear) - my * 1.1))[0];
+  },
+
+  /* Daily gift: a reward for every day you come back, growing over a 7-day streak. */
+  dailyGift() {
+    const d = Save.data, today = new Date().toDateString();
+    if (!d.seen.tutorial && !d.seen.howto) return null;
+    if (d.daily.last === today) return null;
+    const y = new Date(Date.now() - 864e5).toDateString();
+    const day = d.daily.last === y ? (d.daily.day % 7) + 1 : 1;
+    return { day, coins: [100, 150, 200, 250, 300, 400, 500][day - 1], gems: day === 7 ? 5 : day % 3 === 0 ? 1 : 0, today };
+  },
+  claimDaily(g) {
+    const d = Save.data;
+    d.daily = { last: g.today, day: g.day };
+    d.coins += g.coins; d.gems += g.gems;
+    Save.save();
+  },
+
   startTraining() {
     this.lastSetup = { kind: 'training' };
     const fid = Save.data.fighter;
@@ -127,6 +176,7 @@ const Game = {
     if (!s) return UI.home();
     if (s.kind === 'duel') this.startDuel(s.rivalId, s.rounds, s.stageIdx);
     else if (s.kind === 'versus') this.startVersus(s.vs);
+    else if (s.kind === 'tutorial') this.startTutorial();
     else this.startTraining();
   },
 
@@ -145,7 +195,10 @@ const Game = {
   },
   togglePause() { if (!this.match) return; if (this.paused) this.resume(); else this.pause(); },
 
-  quitMatch() { this.toMenu(); UI.home(); },
+  quitMatch() {
+    if (this.match && this.match.tutorial) { Save.data.seen.tutorial = true; Save.data.seen.howto = true; Save.save(); }
+    this.toMenu(); UI.home();
+  },
 
   toMenu() {
     this.match = null; this.paused = false;
@@ -161,8 +214,11 @@ const Game = {
     const won = r.winner === 1;
     let coins = 0, gems = 0, firstWin = false;
     const perfects = r.rounds.filter(x => x.winner === 1 && x.perfect).length;
+    let streakBonus = 0;
     if (won) {
-      coins = t.reward + perfects * Math.round(t.reward * 0.15);
+      d.streak = (d.streak || 0) + 1;
+      streakBonus = Math.min(d.streak - 1, 5) * 0.1;
+      coins = Math.round((t.reward + perfects * Math.round(t.reward * 0.15)) * (1 + streakBonus));
       if (!rec.wins) { gems += t.gems; firstWin = true; }
       gems += Math.max(0, t.index - 3); // expert+ rivals always drop a few gems
       gems += perfects;
@@ -170,6 +226,7 @@ const Game = {
     } else {
       coins = Math.round(t.reward * 0.35);
       rec.losses++; d.stats.losses++;
+      d.streak = 0;
     }
     d.coins += coins; d.gems += gems;
     d.stats.matches++;
@@ -196,7 +253,7 @@ const Game = {
     if (d.coins >= 10000) Honors.unlock('rich');
     Music.start('win');
     const score = [r.f1.roundsWon, r.f2.roundsWon];
-    UI.showResults({ won, winner: r.winner, rival: o, coins, gems, firstWin, score, stats: r.f1.stats });
+    UI.showResults({ won, winner: r.winner, rival: o, coins, gems, firstWin, score, stats: r.f1.stats, streak: won ? d.streak : 0, streakBonus });
     Sound.play(won ? 'buy' : 'back');
   },
 
@@ -249,6 +306,7 @@ const Game = {
     const m = this.match;
     if (m) {
       if (this.paused) return;
+      if (document.body.classList.contains('touch-on') && window.innerHeight > window.innerWidth * 1.05) return;
       const [c1, c2] = Input.poll(m.mode === 'versus' ? 'versus' : 'solo');
       m.update(c1, c2);
       // music intensity follows the danger

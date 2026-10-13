@@ -18,7 +18,9 @@ function defaultSave() {
     opponents: {},
     achievements: {},
     stats: { wins: 0, losses: 0, parries: 0, bestCombo: 0, matches: 0, perfects: 0 },
-    seen: { howto: false },
+    seen: { howto: false, tutorial: false },
+    daily: { last: '', day: 0 },
+    streak: 0,
     settings: {
       master: 0.8, music: 0.6, sfx: 0.9,
       announcer: true, shake: 1, rounds: 3, hitNumbers: true, touch: 'auto',

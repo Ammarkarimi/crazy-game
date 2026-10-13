@@ -16,6 +16,9 @@
 - **14 computer rivals** across 7 difficulty tiers (Novice → Legend). Each has its own fighter, gear, fighting style and AI skill (reaction time, blocking, reading, combos, punishing).
 - **Fair AI.** Bots see the fight through a reaction delay and press the same virtual buttons a player does.
 - **Modes:** Duel (vs any rival), local 2-player Versus, and Training with a switchable dummy.
+- **Gets new players fighting fast:** a brand-new player lands in an 8-step interactive tutorial fight (move, combo, kick, block, guard break, air attack, magic, knockout). Prompts match the player's device (keyboard, gamepad or touch), and the reward is 150 coins plus a one-tap **NEXT DUEL**.
+- **Reasons to come back:** a daily gift on a 7-day streak (coins every day, gems on days 3, 6 and 7), and win streaks that pay up to +50% coins.
+- **Easy to follow:** combo callouts (NICE! GREAT COMBO! SAVAGE!), a coloured ring and a YOU marker under your fighter, and a "turn your phone sideways" hint.
 - **6 painted arenas** with parallax and weather: Moonlit Bamboo, Sunset Temple, Misty Bridge, Volcano Forge, Snow Shrine and Crimson Gate.
 - **Procedural soundtrack** (taiko, koto, shamisen, flute) and sound effects, with no audio files.
 - 18 honors, an optional announcer voice, damage numbers and screen-shake settings.
@@ -41,7 +44,7 @@
 
 ## Progression without levels
 
-Every rival is open from the start. Their **power** rating is shown next to yours (green = weaker, yellow = even, red = stronger). Wins pay coins (more for higher tiers), the first win against each rival pays gems, and EXPERT and above rivals always drop a few gems. Spend coins in the **Forge** and unlock fighters in the **Dojo**. Losing still pays 35% of the reward, so you are never stuck.
+Every rival is open from the start, and the title screen's **NEXT DUEL** button always points at the next rival to beat. Their **power** rating is shown next to yours (green = weaker, yellow = even, red = stronger). Wins pay coins (more for higher tiers), the first win against each rival pays gems, and EXPERT and above rivals always drop a few gems. Spend coins in the **Forge** and unlock fighters in the **Dojo**. Losing still pays 35% of the reward, so you are never stuck.
 
 ## Run it
 
