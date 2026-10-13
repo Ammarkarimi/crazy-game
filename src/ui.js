@@ -88,6 +88,7 @@ const UI = {
 
   /* ---------------- screen management ---------------- */
   show(id) {
+    if (this.gate) { this.gate.el.remove(); this.gate = null; }
     for (const s of document.querySelectorAll('.screen')) s.classList.remove('active');
     const scr = document.getElementById('scr-' + id);
     if (!scr) return;
@@ -145,6 +146,23 @@ const UI = {
     const t = el('div', 'toast', `<div class="ti">${ico}</div><div><div class="tt">${title}</div><div class="tn">${name}</div><div class="td">${desc}</div></div>`);
     document.getElementById('toasts').appendChild(t);
     setTimeout(() => t.remove(), 4200);
+  },
+
+  /* Grown-ups-only gate for destructive actions: a sum small kids can't solve yet. */
+  parentGate(question, onPass) {
+    const a = 6 + Math.floor(Math.random() * 7), b = 5 + Math.floor(Math.random() * 8);
+    const answer = a + b;
+    const opts = [answer, answer + 3, answer - 2].sort(() => Math.random() - 0.5);
+    const el2 = el('section', 'screen active dim', `
+      <h2>GROWN-UPS ONLY</h2>
+      <p class="sub">${question}</p>
+      <p class="hint">To continue, what is <b>${a} + ${b}</b>?</p>
+      <div class="row">${opts.map(v => `<button class="btn yellow" data-act="gateAnswer" data-v="${v}">${v}</button>`).join('')}</div>
+      <div class="row"><button class="btn" data-act="gateCancel">CANCEL</button></div>`);
+    el2.style.zIndex = 20;
+    document.getElementById('ui').appendChild(el2);
+    this.gate = { el: el2, answer, onPass };
+    Sound.play('select');
   },
 
   confirm(act, btn, label) {
@@ -238,11 +256,24 @@ const UI = {
         break;
       }
       case 'resetSave':
-        if (!this.confirm(act, t, 'TAP AGAIN TO ERASE')) return;
-        Save.reset();
-        Sound.play('back');
-        this.toast('ALL CLEAN!', 'Starting fresh', 'Your progress was erased.', '🧽');
-        this.show('settings');
+        this.parentGate('Erase ALL progress, gems, rockets and stickers?', () => {
+          Save.reset();
+          Sound.play('back');
+          this.toast('ALL CLEAN!', 'Starting fresh', 'Your progress was erased.', '🧽');
+          this.show('settings');
+        });
+        break;
+      case 'gateAnswer': {
+        const g = this.gate;
+        if (!g) return;
+        const ok = +t.dataset.v === g.answer;
+        g.el.remove();
+        this.gate = null;
+        if (ok) g.onPass(); else Sound.play('deny');
+        break;
+      }
+      case 'gateCancel':
+        if (this.gate) { this.gate.el.remove(); this.gate = null; Sound.play('back'); }
         break;
       case 'resume': Sound.play('select'); Game.resume(); break;
       case 'abandon':
