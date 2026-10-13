@@ -386,13 +386,13 @@ function bossGlow(ctx, e) {
 function spawnBoss(id) {
   const def = BOSSES[id];
   const loops = Math.floor((W.wave - 1) / 20);
-  const hp = def.hp * (1 + loops * 1.8) * (W.mode === 'daily' ? 1.1 : 1);
+  const hp = def.hp * (1 + loops * 1.8) * (W.mode === 'daily' ? 1.1 : 1) * W.diff.bossHp;
   const p = W.player;
   const x = p.x < ARENA_W / 2 ? ARENA_W * 0.75 : ARENA_W * 0.25;
   const y = ARENA_H / 2;
   const e = {
     id: enemyIdSeq++, type: 'boss', def: { shape: 'boss', score: def.score, xp: def.xp }, bossDef: def, boss: true,
-    x, y, vx: 0, vy: 0, r: def.r, baseR: def.r, hp, maxHp: hp, speed: def.speed, dmg: def.dmg * W.dmgScale,
+    x, y, vx: 0, vy: 0, r: def.r, baseR: def.r, hp, maxHp: hp, speed: def.speed * (0.5 + 0.5 * W.diff.enemySpeed), dmg: def.dmg * W.dmgScale,
     color: def.color, score: def.score, xp: def.xp, t: 0, state: 0, timer: 0, angle: 0, flash: 0, slow: 0,
     elite: false, spawnT: 0, knockRes: 0.97, dead: false, dieAt: -1, lastOrb: -9, lastDash: -9, dir: 1,
     phase: 1, pattern: -1, patT: 2.2, seq: 0, seqT: 0, gunT: 99, spin: 0,

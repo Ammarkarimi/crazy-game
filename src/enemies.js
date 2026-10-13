@@ -231,15 +231,15 @@ let enemyIdSeq = 1;
 function spawnEnemy(type, x, y, opts = {}) {
   const def = ENEMIES[type];
   if (!def) return null;
-  const elite = opts.elite !== undefined ? opts.elite : (W.wave >= 4 && rng.chance(0.02 + W.wave * 0.005));
+  const elite = opts.elite !== undefined ? opts.elite : (W.wave >= 4 && rng.chance((0.02 + W.wave * 0.005) * W.diff.elite));
   const sizeMult = W.sizeMult || 1;
-  const hp = def.hp * W.hpScale * (W.hpEventMult || 1) * (elite ? 4.5 : 1);
+  const hp = def.hp * W.hpScale * (W.hpEventMult || 1) * (elite ? 4.5 : 1) * W.diff.enemyHp;
   const e = {
     id: enemyIdSeq++, type, def,
     x: clamp(x, 30, ARENA_W - 30), y: clamp(y, 30, ARENA_H - 30), vx: 0, vy: 0,
     baseR: def.r * (elite ? 1.35 : 1), r: def.r * (elite ? 1.35 : 1) * sizeMult,
     hp, maxHp: hp,
-    speed: def.speed * W.spdScale * (elite ? 0.9 : 1),
+    speed: def.speed * W.spdScale * (elite ? 0.9 : 1) * W.diff.enemySpeed,
     dmg: def.dmg * W.dmgScale * (elite ? 1.3 : 1),
     color: def.color, score: def.score * (elite ? 6 : 1), xp: def.xp * (elite ? 8 : 1),
     t: 0, state: 0, timer: rng.range(0.5, 2), angle: 0, flash: 0, slow: 0, elite,

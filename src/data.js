@@ -39,17 +39,17 @@ const DIFFICULTY = {
   easy: {
     id: 'easy', name: 'EASY', ico: '🐣', btn: 'primary', note: 'For little heroes: 3 lives, gentle Grumpies.',
     hp: 2.2, enemyDmg: 0.35, enemyHp: 0.6, enemySpeed: 0.78, bulletSpeed: 0.68, spawn: 0.72, bossHp: 0.45,
-    lives: 3, iframes: 1.4, formationWave: 12, elite: 0.4, gems: 1, noEvents: ['mirror', 'blackout'],
+    lives: 3, iframes: 1.4, formationWave: 12, elite: 0.4, gems: 1, waveLen: 0.7, noEvents: ['mirror', 'blackout'],
   },
   normal: {
     id: 'normal', name: 'NORMAL', ico: '🙂', btn: 'blue', note: 'A fun challenge: 2 lives.',
     hp: 1.4, enemyDmg: 0.7, enemyHp: 0.85, enemySpeed: 0.9, bulletSpeed: 0.85, spawn: 0.9, bossHp: 0.75,
-    lives: 2, iframes: 1.0, formationWave: 8, elite: 0.8, gems: 1.2, noEvents: [],
+    lives: 2, iframes: 1.0, formationWave: 8, elite: 0.8, gems: 1.2, waveLen: 0.85, noEvents: [],
   },
   hard: {
     id: 'hard', name: 'HARD', ico: '🔥', btn: 'danger', note: 'For grown-ups and brave kids: 1 life, no mercy!',
     hp: 1, enemyDmg: 1, enemyHp: 1, enemySpeed: 1, bulletSpeed: 1, spawn: 1, bossHp: 1,
-    lives: 1, iframes: 0.75, formationWave: 6, elite: 1, gems: 1.5, noEvents: [],
+    lives: 1, iframes: 0.75, formationWave: 6, elite: 1, gems: 1.5, waveLen: 1, noEvents: [],
   },
 };
 

@@ -360,7 +360,7 @@ function startWave(n) {
   W.dmgScale = 1 + 0.06 * (n - 1);
   W.spdScale = 1 + Math.min(0.42, 0.02 * (n - 1));
   W.formationT = rng.range(6, 10);
-  W.waveDuration = W.isBossWave ? 0 : 26 + Math.min(n, 20) * 1.3;
+  W.waveDuration = W.isBossWave ? 0 : (26 + Math.min(n, 20) * 1.3) * W.diff.waveLen;
   W.pendingEvent = null;
   if (!W.isBossWave && n >= 2) {
     const chance = W.mode === 'daily' ? 1 : n >= 12 ? 0.65 : 0.5;
