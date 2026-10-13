@@ -146,21 +146,24 @@ const Sound = {
 };
 
 const SFX = {
-  shoot: { gap: 45, fn: (s) => s.tone({ type: 'square', freq: frand(820, 980), freqEnd: 300, dur: 0.07, vol: 0.045, filter: 3500 }) },
+shoot: { gap: 55, fn: (s) => s.tone({ type: 'sine', freq: frand(700, 900), freqEnd: 1400, dur: 0.06, vol: 0.035 }) },
   enemyShoot: { gap: 60, fn: (s) => s.tone({ type: 'sine', freq: 620, freqEnd: 260, dur: 0.1, vol: 0.05 }) },
-  hit: { gap: 28, fn: (s) => { s.tone({ type: 'triangle', freq: frand(260, 340), freqEnd: 90, dur: 0.06, vol: 0.09 }); } },
+hit: { gap: 30, fn: (s) => s.tone({ type: 'triangle', freq: frand(500, 650), freqEnd: 300, dur: 0.05, vol: 0.06 }) },
   crit: { gap: 50, fn: (s) => { s.tone({ type: 'square', freq: 1400, freqEnd: 500, dur: 0.06, vol: 0.05 }); } },
-  kill: {
-    gap: 30, fn: (s, p) => {
-      s.noise({ dur: 0.22, vol: 0.22, filter: 2400, filterEnd: 200 });
-      s.tone({ type: 'sine', freq: 160 * p, freqEnd: 40, dur: 0.2, vol: 0.18 });
+kill: {
+    gap: 28, fn: (s, p) => {
+      // bubbly "pop!" + a tiny happy chirp
+      const f = frand(500, 700) * p;
+      s.tone({ type: 'sine', freq: f, freqEnd: f * 2.6, dur: 0.09, vol: 0.16 });
+      s.noise({ dur: 0.05, vol: 0.08, filter: 3000, filterType: 'bandpass', q: 2 });
+      s.tone({ type: 'triangle', freq: f * 2, freqEnd: f * 3, dur: 0.07, vol: 0.05, delay: 0.06 });
     },
   },
-  bigBoom: {
+bigBoom: {
     gap: 80, fn: (s) => {
-      s.noise({ dur: 0.9, vol: 0.5, filter: 3000, filterEnd: 80 });
-      s.tone({ type: 'sine', freq: 110, freqEnd: 25, dur: 0.8, vol: 0.45 });
-      s.tone({ type: 'sawtooth', freq: 80, freqEnd: 30, dur: 0.5, vol: 0.12, filter: 500 });
+      s.noise({ dur: 0.6, vol: 0.28, filter: 1800, filterEnd: 120 });
+      s.tone({ type: 'sine', freq: 160, freqEnd: 45, dur: 0.5, vol: 0.3 });
+      [784, 988, 1175, 1568].forEach((f, i) => s.tone({ type: 'triangle', freq: f, dur: 0.18, vol: 0.06, delay: 0.1 + i * 0.07 }));
     },
   },
   pickup: { gap: 22, fn: (s, p) => s.tone({ type: 'sine', freq: 700 + Math.min(p, 40) * 25, freqEnd: 1500 + Math.min(p, 40) * 25, dur: 0.07, vol: 0.05 }) },
@@ -177,10 +180,11 @@ const SFX = {
   back: { gap: 60, fn: (s) => s.tone({ type: 'square', freq: 500, freqEnd: 300, dur: 0.08, vol: 0.05, filter: 2000 }) },
   deny: { gap: 120, fn: (s) => { s.tone({ type: 'square', freq: 150, dur: 0.14, vol: 0.07, filter: 900 }); s.tone({ type: 'square', freq: 120, dur: 0.16, vol: 0.07, delay: 0.1, filter: 900 }); } },
   buy: { gap: 80, fn: (s) => { [880, 1175, 1760].forEach((f, i) => s.tone({ type: 'triangle', freq: f, dur: 0.12, vol: 0.08, delay: i * 0.05 })); } },
-  hurt: {
+hurt: {
     gap: 120, fn: (s) => {
-      s.tone({ type: 'sawtooth', freq: 240, freqEnd: 50, dur: 0.3, vol: 0.2, filter: 1600 });
-      s.noise({ dur: 0.2, vol: 0.25, filter: 1500, filterEnd: 300 });
+      // cartoon "boing"
+      s.tone({ type: 'triangle', freq: 520, freqEnd: 140, dur: 0.32, vol: 0.2, slide: 0.3 });
+      s.tone({ type: 'sine', freq: 260, freqEnd: 90, dur: 0.3, vol: 0.12 });
     },
   },
   dash: { gap: 80, fn: (s) => s.noise({ dur: 0.2, vol: 0.18, filter: 400, filterEnd: 4000, filterType: 'bandpass', q: 2 }) },
@@ -201,11 +205,11 @@ const SFX = {
       s.tone({ type: 'sawtooth', freq: 55, freqEnd: 220, dur: 0.6, vol: 0.12, filter: 900 });
     },
   },
-  warning: {
+warning: {
     gap: 900, fn: (s) => {
-      for (let i = 0; i < 3; i++) {
-        s.tone({ type: 'sawtooth', freq: 300, freqEnd: 600, dur: 0.35, vol: 0.12, delay: i * 0.42, filter: 1500, slide: 0.3 });
-      }
+      // "uh-oh!"
+      s.tone({ type: 'square', freq: 660, dur: 0.22, vol: 0.08, filter: 1800, sustain: 0.6 });
+      s.tone({ type: 'square', freq: 494, dur: 0.38, vol: 0.08, filter: 1800, sustain: 0.6, delay: 0.26 });
     },
   },
   bossHit: { gap: 70, fn: (s) => s.tone({ type: 'square', freq: 120, freqEnd: 70, dur: 0.07, vol: 0.06, filter: 800 }) },
@@ -220,15 +224,23 @@ const SFX = {
       [262, 330, 392, 523, 659, 784].forEach((f, i) => s.tone({ type: 'sawtooth', freq: f, dur: 0.3, vol: 0.06, delay: i * 0.06, filter: 3000 }));
     },
   },
-  gameOver: {
+gameOver: {
     gap: 500, fn: (s) => {
-      [392, 330, 262, 196].forEach((f, i) => s.tone({ type: 'sawtooth', freq: f, freqEnd: f * 0.97, dur: 0.5, vol: 0.09, delay: i * 0.28, filter: 1400 }));
+      // sad trombone "wah wah wah waaah"
+      [392, 370, 349].forEach((f, i) => s.tone({ type: 'sawtooth', freq: f, freqEnd: f * 0.98, dur: 0.38, vol: 0.09, delay: i * 0.4, filter: 1100, sustain: 0.7 }));
+      s.tone({ type: 'sawtooth', freq: 330, freqEnd: 311, dur: 1.1, vol: 0.09, delay: 1.2, filter: 1100, sustain: 0.8 });
     },
   },
   victory: {
     gap: 500, fn: (s) => {
       const n = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
       n.forEach((f, i) => s.tone({ type: 'square', freq: f, dur: 0.22, vol: 0.06, delay: i * 0.11, filter: 4000 }));
+    },
+  },
+  cheer: {
+    gap: 300, fn: (s) => {
+      [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => s.tone({ type: 'triangle', freq: f, dur: 0.15, vol: 0.07, delay: i * 0.045 }));
+      s.noise({ dur: 0.4, vol: 0.06, filter: 7000, filterType: 'highpass', delay: 0.1 });
     },
   },
   achievement: { gap: 300, fn: (s) => { [1047, 1319, 1568, 2093].forEach((f, i) => s.tone({ type: 'triangle', freq: f, dur: 0.2, vol: 0.07, delay: i * 0.06 })); } },
@@ -241,25 +253,29 @@ const SFX = {
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
 
 const TRACKS = {
+  // gentle, happy lullaby-pop for the menus  (C - F - G - C)
   menu: {
-    bpm: 92,
-    chords: [[57, 60, 64, 67], [53, 57, 60, 64], [48, 52, 55, 59], [55, 59, 62, 66]],
-    bass: [33, 29, 36, 31],
+    bpm: 100,
+    chords: [[60, 64, 67, 72], [65, 69, 72, 77], [67, 71, 74, 79], [64, 67, 72, 76]],
+    bass: [36, 41, 43, 40],
   },
+  // bouncy chiptune adventure  (C - G - Am - F)
   game: {
-    bpm: 124,
+    bpm: 132,
+    chords: [[60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60]],
+    bass: [36, 43, 45, 41],
+  },
+  // later waves: brighter key change  (D - A - Bm - G)
+  game2: {
+    bpm: 138,
+    chords: [[62, 66, 69], [57, 61, 64], [59, 62, 66], [55, 59, 62]],
+    bass: [38, 45, 47, 43],
+  },
+  // boss: playful and energetic, not scary  (Am - F - C - G)
+  boss: {
+    bpm: 150,
     chords: [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]],
     bass: [33, 29, 36, 31],
-  },
-  game2: {
-    bpm: 128,
-    chords: [[50, 53, 57], [46, 50, 53], [48, 52, 55], [45, 49, 52]],
-    bass: [38, 34, 36, 33],
-  },
-  boss: {
-    bpm: 146,
-    chords: [[50, 53, 57], [51, 55, 58], [50, 53, 57], [49, 52, 56]],
-    bass: [38, 39, 38, 37],
   },
 };
 
@@ -309,7 +325,7 @@ const Music = {
     Sound.noise({ dur: open ? 0.18 : 0.04, vol: v, filter: 7500, filterType: 'highpass' }, Sound.music, t);
   },
   bass(t, m, dur, v = 0.2) {
-    Sound.tone({ type: 'sawtooth', freq: mtof(m), dur: dur, vol: v, filter: 380, filterEnd: 900, q: 6, attack: 0.005 }, Sound.music, t);
+    Sound.tone({ type: 'triangle', freq: mtof(m), dur: dur, vol: v * 1.3, attack: 0.005 }, Sound.music, t);
     Sound.tone({ type: 'square', freq: mtof(m - 12), dur: dur, vol: v * 0.5, filter: 300 }, Sound.music, t);
   },
   arp(t, m, dur, v = 0.045) {
@@ -323,6 +339,11 @@ const Music = {
   },
   lead(t, m, dur, v = 0.04) {
     Sound.tone({ type: 'sawtooth', freq: mtof(m), dur, vol: v, filter: 3000, attack: 0.02, sustain: 0.6, send: Sound.delay }, Sound.music, t);
+  },
+
+  bell(t, m, dur, v = 0.04) {
+    Sound.tone({ type: 'sine', freq: mtof(m), dur, vol: v, attack: 0.003 }, Sound.music, t);
+    Sound.tone({ type: 'sine', freq: mtof(m) * 2, dur: dur * 0.5, vol: v * 0.35, attack: 0.003 }, Sound.music, t);
   },
 
   playStep(tr, s, t, sd) {
@@ -340,6 +361,8 @@ const Music = {
       }
       if (st === 0 || st === 10) this.bass(t, root, sd * 5, 0.12);
       if (st === 0 && Math.floor(s / 16) % 2 === 1) this.kick(t, 0.5);
+      const tune = [0, -1, 1, -1, 2, -1, 1, -1, 3, -1, -1, 2, 1, -1, 0, -1];
+      if (tune[st] >= 0) this.bell(t, chord[tune[st]] + 12, sd * 2.5, 0.03);
       if (st % 4 === 2) this.hat(t, 0.035);
       return;
     }
@@ -372,6 +395,33 @@ const Music = {
       const note = chord[idx % chord.length] + 12 * (1 + Math.floor(idx / chord.length));
       this.arp(t, note + 12, sd * 0.8, 0.028 + I * 0.012);
     }
-    if (I > 0.8 && st % 8 === 0) this.lead(t, chord[(st / 8 + bar) % chord.length] + 24, sd * 7, 0.025);
+    // catchy bouncy hook
+    const hook = [0, -1, 2, -1, 1, 2, -1, 0, -1, 1, -1, 2, 1, -1, 0, -1];
+    if (I > 0.4 && hook[st] >= 0 && bar % 2 === 0) this.bell(t, chord[hook[st]] + 24, sd * 1.8, 0.035);
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Cheering voice: short praise lines via the browser's speech synthesis.
+   Silently does nothing where speech is unavailable. Toggle in Settings.
+   ------------------------------------------------------------------------- */
+const Voice = {
+  last: 0,
+  say(text, force) {
+    if (!Save.data.settings.voice || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+    const now = performance.now();
+    if (!force && now - this.last < 2200) return;
+    this.last = now;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.pitch = 1.7;
+      u.rate = 1.05;
+      u.volume = Math.min(1, Save.data.settings.master * 1.1);
+      const voices = speechSynthesis.getVoices();
+      const en = voices.find(v => /en[-_]/i.test(v.lang) && /female|samantha|zira|aria|jenny|google us/i.test(v.name)) || voices.find(v => /^en/i.test(v.lang));
+      if (en) u.voice = en;
+      speechSynthesis.speak(u);
+    } catch (e) { /* ignore */ }
   },
 };

@@ -66,7 +66,8 @@ const Input = {
     const tStart = e => {
       this.setDevice('touch');
       for (const t of e.changedTouches) {
-        const left = t.clientX < window.innerWidth * 0.5;
+        // With auto-aim on (default for kids) a finger anywhere steers the rocket
+        const left = (Save.data.settings.autoAim && this.touch.move.id === null) || t.clientX < window.innerWidth * 0.5;
         const stick = left ? this.touch.move : this.touch.aim;
         if (stick.id === null) {
           stick.id = t.identifier;

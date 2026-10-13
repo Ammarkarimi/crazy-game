@@ -5,6 +5,7 @@
    ========================================================================== */
 
 const MAX_PARTICLES = 2600;
+const CONFETTI = ['#ff5a7a', '#ff9b3d', '#ffd93b', '#4dff9a', '#2ee6ff', '#4aa8ff', '#c46bff', '#ff5ec8'];
 
 /* Convert any CSS colour to a hex string with coarse channel steps so that
    animated (hsl) colours still hit a small, bounded sprite cache. */
@@ -101,6 +102,39 @@ const FX = {
     }
   },
 
+  /* A cheered-up Grumpy: a smiling face that floats away */
+  happy(x, y, color, size) {
+    let n = 0;
+    for (const p of this.particles) if (p.type === 'happy') n++;
+    if (n > 30) return;
+    this.particles.push({
+      x, y, vx: frand(-30, 30), vy: -frand(60, 100), life: 1.1, max: 1.1,
+      size: Math.max(9, size), color: color[0] === '#' ? color : quantizeColor(color), drag: 0.8, type: 'happy', grav: 0, rot: frand(-0.3, 0.3), vr: frand(-1, 1),
+    });
+  },
+
+  confetti(x, y, count, speed = 300) {
+    count = Math.round(count * this.quality());
+    for (let i = 0; i < count; i++) {
+      if (this.particles.length >= MAX_PARTICLES) this.particles.shift();
+      const a = frand(0, TAU), s = speed * frand(0.3, 1);
+      this.particles.push({
+        x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 120, life: frand(0.7, 1.3), max: 1.3,
+        size: frand(3, 6), color: CONFETTI[Math.floor(Math.random() * CONFETTI.length)],
+        drag: 2.2, type: 'confetti', grav: 420, rot: frand(0, TAU), vr: frand(-14, 14),
+      });
+    }
+  },
+
+  stars(x, y, count, color = '#ffd93b', speed = 220) {
+    count = Math.round(count * this.quality());
+    for (let i = 0; i < count; i++) {
+      if (this.particles.length >= MAX_PARTICLES) this.particles.shift();
+      const a = frand(0, TAU), s = speed * frand(0.3, 1);
+      this.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: frand(0.4, 0.8), max: 0.8, size: frand(4, 7), color, drag: 3, type: 'star', grav: 0, rot: frand(0, TAU), vr: frand(-6, 6) });
+    }
+  },
+
   trail(x, y, color, size = 6, life = 0.3) {
     if (this.particles.length >= MAX_PARTICLES) return;
     this.particles.push({ x, y, vx: 0, vy: 0, life, max: life, size, color, drag: 0, type: 'glow', grav: 0 });
@@ -176,6 +210,12 @@ const FX = {
         const s = p.size * (0.4 + t * 0.8) * 2;
         ctx.globalAlpha = t;
         ctx.drawImage(this.glow(p.color), p.x - s, p.y - s, s * 2, s * 2);
+      } else if (p.type === 'star') {
+        ctx.globalAlpha = Math.min(1, t * 2);
+        ctx.fillStyle = p.color;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        starPath(ctx, p.size); ctx.fill();
+        ctx.restore();
       } else if (p.type === 'shard') {
         ctx.globalAlpha = Math.min(1, t * 2);
         ctx.strokeStyle = p.color;
@@ -213,6 +253,29 @@ const FX = {
     }
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
+    // solid (non-additive) pass: confetti and happy faces
+    for (const p of this.particles) {
+      if (p.type !== 'confetti' && p.type !== 'happy') continue;
+      const t = p.life / p.max;
+      if (p.type === 'confetti') {
+        ctx.globalAlpha = Math.min(1, t * 2.5);
+        ctx.fillStyle = p.color;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillRect(-p.size, -p.size * 0.45 * Math.abs(Math.cos(p.rot * 1.7)) - 0.5, p.size * 2, p.size * 0.9 * Math.abs(Math.cos(p.rot * 1.7)) + 1);
+        ctx.restore();
+      } else {
+        const age = 1 - t;
+        const s = p.size * (age < 0.15 ? 0.6 + age / 0.15 * 0.5 : 1.1);
+        ctx.globalAlpha = Math.min(1, t * 2.2);
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.sin(age * 10) * 0.25);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(0, 0, s, 0, TAU); ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+        drawFace(ctx, 0, 0, s, { mood: 'happy' });
+        ctx.restore();
+      }
+    }
+    ctx.globalAlpha = 1;
   },
 
   drawTexts(ctx) {
@@ -223,16 +286,25 @@ const FX = {
       const age = t.max - t.life;
       const pop = age < 0.12 ? 1 + (1 - age / 0.12) * (0.6 + t.pop) : 1;
       ctx.globalAlpha = Math.min(1, k * 2.5);
-      ctx.font = `900 ${Math.round(t.size * pop)}px ${'Segoe UI, Arial, sans-serif'}`;
+      ctx.font = `700 ${Math.round(t.size * pop)}px Fredoka, Segoe UI, Arial, sans-serif`;
       ctx.lineWidth = 3;
       ctx.strokeStyle = 'rgba(0,0,0,0.75)';
       ctx.strokeText(t.str, t.x, t.y);
-      ctx.fillStyle = t.color;
+      ctx.fillStyle = t.color === 'rainbow' ? hsl((performance.now() / 3 + t.x) % 360, 100, 65) : t.color;
       ctx.fillText(t.str, t.x, t.y);
     }
     ctx.globalAlpha = 1;
   },
 };
+
+function starPath(ctx, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i / 10 * TAU, rr = i % 2 ? r * 0.45 : r;
+    ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+  }
+  ctx.closePath();
+}
 
 /* ---------------------------------------------------------------------------
    Warp grid: a spring-mass mesh behind the action that ripples from every

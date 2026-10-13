@@ -12,8 +12,9 @@ const Achievements = {
     Save.data.achievements[id] = todayKey();
     Save.data.shards += a.reward;
     Save.save();
-    UI.toast('ACHIEVEMENT UNLOCKED', a.name, a.desc + (a.reward ? `  ·  +${a.reward} ◆` : ''));
+    UI.toast('NEW STICKER!', a.name, a.desc + (a.reward ? `  ·  +${a.reward} 💎` : ''), a.ico);
     Sound.play('achievement');
+    Voice.say('New sticker!');
   },
   count() { return ACHIEVEMENTS.filter(a => Save.data.achievements[a.id]).length; },
 };
@@ -24,17 +25,21 @@ const MENU_PARENTS = {
 };
 
 const SETTINGS_UI = [
-  { key: 'master', label: 'Master Volume', type: 'range', min: 0, max: 1, step: 0.05 },
-  { key: 'music', label: 'Music', type: 'range', min: 0, max: 1, step: 0.05 },
-  { key: 'sfx', label: 'Sound Effects', type: 'range', min: 0, max: 1, step: 0.05 },
-  { key: 'shake', label: 'Screen Shake', type: 'range', min: 0, max: 1.5, step: 0.1 },
-  { key: 'particles', label: 'Particles', type: 'range', min: 0.2, max: 1.5, step: 0.1 },
-  { key: 'autofire', label: 'Auto-Fire', type: 'toggle' },
-  { key: 'damageNumbers', label: 'Damage Numbers', type: 'toggle' },
-  { key: 'flashes', label: 'Screen Flashes', type: 'toggle' },
-  { key: 'crt', label: 'CRT Scanlines', type: 'toggle' },
-  { key: 'showFps', label: 'Show FPS', type: 'toggle' },
-  { key: '_fullscreen', label: 'Fullscreen', type: 'button' },
+  { key: 'difficulty', label: '🎮 Difficulty', type: 'seg', options: [['easy', '🐣 Easy'], ['normal', '🙂 Normal'], ['hard', '🔥 Hard']] },
+  { key: 'master', label: '🔊 Volume', type: 'range', min: 0, max: 1, step: 0.05 },
+  { key: 'music', label: '🎵 Music', type: 'range', min: 0, max: 1, step: 0.05 },
+  { key: 'sfx', label: '💥 Sounds', type: 'range', min: 0, max: 1, step: 0.05 },
+  { key: 'voice', label: '🗣️ Cheering Voice', type: 'toggle' },
+  { key: 'autoAim', label: '🎯 Auto-Aim', type: 'toggle' },
+  { key: 'autofire', label: '✨ Auto-Shoot', type: 'toggle' },
+  { key: 'breakMins', label: '🧃 Break Reminder', type: 'seg', options: [[0, 'Off'], [15, '15m'], [30, '30m'], [60, '60m']] },
+  { key: 'shake', label: '📳 Screen Shake', type: 'range', min: 0, max: 1.5, step: 0.1 },
+  { key: 'particles', label: '🎊 Confetti Amount', type: 'range', min: 0.2, max: 1.5, step: 0.1 },
+  { key: 'flashes', label: '⚡ Screen Flashes', type: 'toggle' },
+  { key: 'damageNumbers', label: '🔢 Damage Numbers', type: 'toggle' },
+  { key: 'crt', label: '📺 Retro TV Lines', type: 'toggle' },
+  { key: 'showFps', label: '⏱️ Show FPS', type: 'toggle' },
+  { key: '_fullscreen', label: '🖥️ Fullscreen', type: 'button' },
 ];
 
 const UI = {
@@ -120,24 +125,24 @@ const UI = {
 
   demoLocked() {
     Sound.play('deny');
-    this.toast('DEMO', 'Full game only', 'Unlock Endless, Daily Chaos and all 20 waves in the full version.');
+    this.toast('DEMO', 'Full game only', 'Get the full game for Forever Mode, Daily Surprise and all 20 waves!', '🔒');
   },
 
   refreshTitle() {
     if (DEMO_MODE) {
-      document.getElementById('dailyInfo').textContent = 'FULL GAME';
-      document.getElementById('endlessInfo').textContent = 'FULL GAME';
+      document.getElementById('dailyInfo').textContent = '🔒';
+      document.getElementById('endlessInfo').textContent = '🔒';
       document.getElementById('version').textContent = 'v' + VERSION + ' DEMO';
       return;
     }
     const d = Save.data.daily;
-    document.getElementById('dailyInfo').textContent = d.key === todayKey() && d.played ? 'BEST ' + fmt(d.best) : 'NEW';
+    document.getElementById('dailyInfo').textContent = d.key === todayKey() && d.played ? '✔' : 'NEW!';
     const be = Save.data.stats.bestEndlessWave;
-    document.getElementById('endlessInfo').textContent = be ? 'BEST WAVE ' + be : '';
+    document.getElementById('endlessInfo').textContent = be ? 'best: wave ' + be : '';
   },
 
-  toast(title, name, desc) {
-    const t = el('div', 'toast', `<div class="tt">${title}</div><div class="tn">${name}</div><div class="td">${desc}</div>`);
+  toast(title, name, desc, ico = '⭐') {
+    const t = el('div', 'toast', `<div class="ti">${ico}</div><div><div class="tt">${title}</div><div class="tn">${name}</div><div class="td">${desc}</div></div>`);
     document.getElementById('toasts').appendChild(t);
     setTimeout(() => t.remove(), 4200);
   },
@@ -196,6 +201,25 @@ const UI = {
         break;
       }
       case 'buyMeta': this.buyMeta(t.dataset.id); break;
+      case 'seg': {
+        const k = t.dataset.key;
+        const v = t.dataset.val;
+        Save.data.settings[k] = isNaN(+v) ? v : +v;
+        Save.save();
+        Sound.play('select');
+        this.buildSettings(true);
+        break;
+      }
+      case 'diff': {
+        Save.data.settings.difficulty = t.dataset.id;
+        Save.save();
+        Sound.play('select');
+        const keep = this.focusIdx;
+        this.buildHangar();
+        this.focusIdx = keep;
+        this.applyFocus();
+        break;
+      }
       case 'toggle': {
         const k = t.dataset.key;
         Save.data.settings[k] = !Save.data.settings[k];
@@ -214,15 +238,15 @@ const UI = {
         break;
       }
       case 'resetSave':
-        if (!this.confirm(act, t, 'CLICK AGAIN TO ERASE')) return;
+        if (!this.confirm(act, t, 'TAP AGAIN TO ERASE')) return;
         Save.reset();
         Sound.play('back');
-        this.toast('PROGRESS', 'Save data erased', 'A fresh start.');
+        this.toast('ALL CLEAN!', 'Starting fresh', 'Your progress was erased.', '🧽');
         this.show('settings');
         break;
       case 'resume': Sound.play('select'); Game.resume(); break;
       case 'abandon':
-        if (!this.confirm(act, t, 'CONFIRM ABANDON?')) return;
+        if (!this.confirm(act, t, 'REALLY GO HOME?')) return;
         Game.endRun(false);
         break;
       case 'pick': this.pick(parseInt(t.dataset.i, 10), true); break;
@@ -244,7 +268,7 @@ const UI = {
 
   /* ---------------- hangar ---------------- */
   buildHangar() {
-    const modeNames = { standard: DEMO_MODE ? 'DEMO · Survive ' + DEMO_WAVES + ' waves' : 'STANDARD · Survive 20 waves', endless: 'ENDLESS · No limits, no mercy' };
+    const modeNames = { standard: DEMO_MODE ? 'Demo: play ' + DEMO_WAVES + ' waves!' : 'Cheer up the Grumpies for 20 waves!', endless: 'Forever Mode: how far can you go?' };
     document.getElementById('hangarMode').textContent = modeNames[this.hangarMode] || '';
     const list = document.getElementById('shipList');
     list.innerHTML = '';
@@ -261,11 +285,11 @@ const UI = {
         <div class="name" style="color:${s.color}">${s.name}</div>
         <div class="desc">${s.desc}</div>
         <div class="bars">
-          HULL<div class="bar"><i style="width:${Math.min(100, (st.maxHp || 100) / 1.8)}%"></i></div>
-          SPEED<div class="bar"><i style="width:${Math.min(100, (st.speed || 290) / 3.6)}%"></i></div>
-          FIREPOWER<div class="bar"><i style="width:${Math.min(100, power / 1.15)}%"></i></div>
+          ❤️ HEALTH<div class="bar"><i style="width:${Math.min(100, (st.maxHp || 100) / 1.8)}%"></i></div>
+          👟 SPEED<div class="bar"><i style="width:${Math.min(100, (st.speed || 290) / 3.6)}%"></i></div>
+          💪 POWER<div class="bar"><i style="width:${Math.min(100, power / 1.15)}%"></i></div>
         </div>
-        <div class="cost">${owned ? (s.id === sel ? 'SELECTED' : 'OWNED') : '◆ ' + fmt(s.cost)}</div>`;
+        <div class="cost">${owned ? (s.id === sel ? '✔ PICKED!' : 'TAP TO PICK') : '🔒 💎 ' + fmt(s.cost)}</div>`;
       list.appendChild(card);
       const cv = card.querySelector('canvas');
       const c = cv.getContext('2d');
@@ -274,6 +298,10 @@ const UI = {
     }
     const btn = document.getElementById('btnLaunch');
     btn.disabled = !Save.data.ships[sel];
+    const cur = Save.data.settings.difficulty;
+    document.getElementById('diffRow').innerHTML = Object.values(DIFFICULTY).map(d =>
+      `<button class="btn diff ${d.btn} ${d.id === cur ? 'sel' : ''}" data-act="diff" data-id="${d.id}"><i class="emo">${d.ico}</i>${d.name}</button>`).join('');
+    document.getElementById('diffNote').textContent = (DIFFICULTY[cur] || DIFFICULTY.easy).note;
   },
 
   clickShip(id, t) {
@@ -290,7 +318,8 @@ const UI = {
       Save.data.selectedShip = id;
       Save.save();
       Sound.play('buy');
-      this.toast('NEW SHIP', s.name, 'Ready for launch.');
+      this.toast('NEW ROCKET!', s.name, 'Ready to blast off!', '🚀');
+      Voice.say('New rocket!');
       if (SHIPS.every(x => Save.data.ships[x.id])) Achievements.unlock('allships');
     } else {
       Sound.play('deny');
@@ -314,10 +343,10 @@ const UI = {
       const cost = lvl < max ? m.cost[lvl] : null;
       const item = el('div', 'item');
       item.innerHTML = `
-        <div class="ico" style="color:var(--cyan)">${m.ico}</div>
+        <div class="ico">${m.ico}</div>
         <div class="txt"><div class="t">${m.name}</div><div class="d">${m.desc}</div>
           <div class="pips">${Array.from({ length: max }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div></div>
-        <button class="btn buy" data-act="buyMeta" data-id="${m.id}" ${cost === null || Save.data.shards < cost ? 'disabled' : ''}>${cost === null ? 'MAX' : '◆ ' + fmt(cost)}</button>`;
+        <button class="btn buy" data-act="buyMeta" data-id="${m.id}" ${cost === null || Save.data.shards < cost ? 'disabled' : ''}>${cost === null ? 'MAX ✔' : '💎 ' + fmt(cost)}</button>`;
       list.appendChild(item);
     }
   },
@@ -341,14 +370,11 @@ const UI = {
   buildAchievements() {
     const list = document.getElementById('achList');
     list.innerHTML = '';
-    document.getElementById('achCount').textContent = `${Achievements.count()} / ${ACHIEVEMENTS.length} unlocked`;
+    document.getElementById('achCount').textContent = `You have ${Achievements.count()} of ${ACHIEVEMENTS.length} stickers!`;
     for (const a of ACHIEVEMENTS) {
       const got = !!Save.data.achievements[a.id];
-      const item = el('div', 'item ' + (got ? 'unlocked' : 'locked'));
-      item.innerHTML = `
-        <div class="ico" style="color:${got ? 'var(--yel)' : 'var(--muted)'}">${got ? '★' : '?'}</div>
-        <div class="txt"><div class="t">${a.name}</div><div class="d">${a.desc}</div>
-        <div class="d" style="color:var(--yel)">${a.reward ? '+' + a.reward + ' ◆' : ''}${got ? ' · unlocked ' + Save.data.achievements[a.id] : ''}</div></div>`;
+      const item = el('div', 'sticker' + (got ? ' got' : ''));
+      item.innerHTML = `<div class="big">${a.ico}</div><div class="t">${got ? a.name : '???'}</div><div class="d">${a.desc}</div>${a.reward ? `<div class="r">+${a.reward} 💎</div>` : ''}`;
       list.appendChild(item);
     }
   },
@@ -356,16 +382,16 @@ const UI = {
   buildRecords() {
     const s = Save.data.stats;
     const stats = [
-      ['BEST SCORE', fmt(s.bestScore)], ['BEST WAVE', s.bestWave], ['BEST ENDLESS', s.bestEndlessWave || '-'],
-      ['RUNS', s.runs], ['VICTORIES', s.wins], ['TOTAL KILLS', fmt(s.kills)],
-      ['BOSSES SLAIN', s.bossKills], ['OVERDRIVES', s.overdrives], ['SHARDS EARNED', fmt(s.shardsEarned)],
-      ['PLAY TIME', fmtTime(s.playTime)], ['ACHIEVEMENTS', `${Achievements.count()}/${ACHIEVEMENTS.length}`], ['CHAOS EVENTS', s.events],
+      ['🏆 BEST SCORE', fmt(s.bestScore)], ['🌊 BEST WAVE', s.bestWave], ['♾️ FOREVER BEST', s.bestEndlessWave || '-'],
+      ['🎮 GAMES', s.runs], ['👑 WINS', s.wins], ['😊 GRUMPIES CHEERED', fmt(s.kills)],
+      ['🐝 BIG GRUMPIES', s.bossKills], ['🌈 RAINBOWS', s.overdrives], ['💎 GEMS FOUND', fmt(s.shardsEarned)],
+      ['⏱️ PLAY TIME', fmtTime(s.playTime)], ['⭐ STICKERS', `${Achievements.count()}/${ACHIEVEMENTS.length}`], ['🎉 SURPRISES', s.events],
     ];
     document.getElementById('recStats').innerHTML = stats.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
     const hs = Save.data.highscores;
     document.getElementById('recList').innerHTML = hs.length
-      ? hs.map((h, i) => `<div class="rec"><span class="r">#${i + 1}</span><span>${fmt(h.score)}</span><span>W${h.wave}</span><span>${h.ship}</span><span class="d">${h.mode.toUpperCase()}</span></div>`).join('')
-      : '<p class="sub">No runs yet. Go make some chaos!</p>';
+      ? hs.map((h, i) => `<div class="rec"><span class="r">${['🥇', '🥈', '🥉'][i] || '#' + (i + 1)}</span><span>${fmt(h.score)}</span><span>Wave ${h.wave}</span><span>${h.ship}</span><span class="d">${(DIFFICULTY[h.diff] || { ico: '' }).ico} ${{ standard: 'PLAY', endless: 'FOREVER', daily: 'DAILY' }[h.mode] || ''}</span></div>`).join('')
+      : '<p class="sub">No games yet. Let\'s go play! 🚀</p>';
   },
 
   /* ---------------- settings ---------------- */
@@ -380,6 +406,9 @@ const UI = {
         row.innerHTML = `<label>${o.label}</label><input type="range" min="${o.min}" max="${o.max}" step="${o.step}" value="${s[o.key]}" data-key="${o.key}">`;
       } else if (o.type === 'toggle') {
         row.innerHTML = `<label>${o.label}</label><button class="btn toggle ${s[o.key] ? 'on' : ''}" data-act="toggle" data-key="${o.key}">${s[o.key] ? 'ON' : 'OFF'}</button>`;
+      } else if (o.type === 'seg') {
+        row.innerHTML = `<label>${o.label}</label><div class="seg">${o.options.map(([v, l]) =>
+          `<button class="btn ${String(s[o.key]) === String(v) ? 'on primary' : ''}" data-act="seg" data-key="${o.key}" data-val="${v}">${l}</button>`).join('')}</div>`;
       } else {
         row.innerHTML = `<label>${o.label}</label><button class="btn toggle" data-act="fullscreen">TOGGLE</button>`;
       }
@@ -393,8 +422,10 @@ const UI = {
     const b = document.getElementById('pauseBuild');
     const ids = Object.keys(W.upgrades);
     b.innerHTML = ids.length
-      ? ids.map(id => { const u = UPGRADE_BY_ID[id]; return `<span class="chip ${u.r}">${u.ico} ${u.name}${W.upgrades[id] > 1 ? ' ×' + W.upgrades[id] : ''}</span>`; }).join('')
-      : '<span class="sub">No upgrades yet</span>';
+      ? ids.map(id => { const u = UPGRADE_BY_ID[id]; return `<span class="chip ${u.r}"><i class="emo">${u.ico}</i>${u.name}${W.upgrades[id] > 1 ? ' ×' + W.upgrades[id] : ''}</span>`; }).join('')
+      : '<span class="sub">No powers yet. Grab some stars! ⭐</span>';
+    document.getElementById('pauseNote').textContent = this.pauseNote || '';
+    this.pauseNote = '';
     this.show('pause');
   },
 
@@ -414,13 +445,13 @@ const UI = {
         <div class="cico">${u.ico}</div>
         <div class="cname">${u.name}</div>
         <div class="cdesc">${u.desc}</div>
-        <div class="clvl">${u.id[0] === '_' ? '' : u.max === 1 ? 'UNIQUE' : `LV ${have} → ${have + 1} / ${u.max}`}</div>`;
+        <div class="clvl">${u.id[0] === '_' ? '' : u.max === 1 ? '✨ ONE OF A KIND' : '●'.repeat(have) + '<b style="color:var(--green)">●</b>' + '○'.repeat(Math.max(0, u.max - have - 1))}</div>`;
       wrap.appendChild(c);
     });
     const rb = document.getElementById('btnReroll');
-    rb.innerHTML = `REROLL <small>${W.rerolls} left</small>`;
+    rb.innerHTML = `<i class="emo">🎲</i>NEW CARDS <small>${W.rerolls} left</small>`;
     rb.disabled = W.rerolls <= 0;
-    document.getElementById('lvlSub').textContent = `Level ${W.level - W.pendingLevels + 1} · choose an upgrade`;
+    document.getElementById('lvlSub').textContent = `You are level ${W.level - W.pendingLevels + 1}! Pick a super power!`;
     this.show('levelup');
   },
 
@@ -442,21 +473,34 @@ const UI = {
 
   showGameOver(r) {
     const demoDone = DEMO_MODE && r.victory;
-    document.getElementById('goTitle').textContent = demoDone ? 'DEMO COMPLETE!' : r.victory ? 'VICTORY!' : 'GAME OVER';
-    document.getElementById('goTitle').style.color = r.victory ? 'var(--yel)' : '';
-    const modeTxt = { standard: 'Standard', endless: 'Endless', daily: 'Daily Chaos ' + todayKey() }[W.mode];
-    document.getElementById('goSub').textContent =
-      demoDone ? 'Thanks for playing! 15 more waves, 3 more bosses, Endless and Daily Chaos await in the full game.'
-        : `${modeTxt} · ${W.ship.name} · Wave ${W.wave} · Level ${W.level}` + (r.isNewBest ? '  ·  NEW BEST SCORE!' : '');
+    const stars = r.victory ? 3 : 1 + (W.wave >= 5 ? 1 : 0) + (W.wave >= 12 ? 1 : 0);
+    const titles = { 1: 'GOOD TRY!', 2: 'GREAT JOB!', 3: 'AMAZING!' };
+    const title = demoDone ? 'DEMO DONE!' : r.victory ? 'YOU DID IT!' : titles[stars];
+    const gt = document.getElementById('goTitle');
+    gt.textContent = title;
+    gt.style.color = r.victory ? 'var(--yel)' : '';
+    document.getElementById('goStars').innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}">⭐</span>`).join('');
+    const cheers = [
+      'You are getting better every time!', 'The Grumpies are scared of you now!', 'So close! One more go?',
+      'What a pilot! Try again?', 'Your rocket is proud of you!', 'High five! ✋',
+    ];
+    document.getElementById('goSub').textContent = demoDone
+      ? 'Thanks for playing! 15 more waves, 3 more Big Grumpies, Forever Mode and Daily Surprises are in the full game!'
+      : r.victory ? 'You cheered up King Grumpus! You are a SUPERSTAR!' + (r.isNewBest ? ' New best score!' : '')
+        : (r.isNewBest ? 'NEW BEST SCORE! ' : '') + cheers[Math.floor(Math.random() * cheers.length)];
     const stats = [
-      ['SCORE', fmt(W.score)], ['KILLS', fmt(W.kills)], ['MAX COMBO', W.maxCombo],
-      ['TIME', fmtTime(W.realT)], ['DAMAGE DEALT', fmt(W.stats.damage)], ['BOSSES', W.bossKills],
-      ['OVERDRIVES', W.odCount], ['UPGRADES', Object.values(W.upgrades).reduce((a, b) => a + b, 0)],
+      ['⭐ POINTS', fmt(W.score)], ['😊 GRUMPIES CHEERED', fmt(W.kills)], ['🔥 BEST COMBO', W.maxCombo],
+      ['🌊 WAVE', W.wave], ['⏱️ TIME', fmtTime(W.realT)], ['🌈 RAINBOWS', W.odCount],
     ];
     document.getElementById('goStats').innerHTML = stats.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
     document.getElementById('goShards').textContent = fmt(r.earned);
     document.getElementById('btnContinue').hidden = !(r.victory && W.mode !== 'endless') || DEMO_MODE;
     this.show('gameover');
+    setTimeout(() => {
+      for (let i = 0; i < stars; i++) setTimeout(() => Sound.play('shard'), 350 * i + 100);
+      if (stars === 3) setTimeout(() => Sound.play('cheer'), 1150);
+    }, 200);
+    Voice.say(r.victory ? 'You are a superstar!' : title.toLowerCase(), true);
   },
 
   /* ---------------- keyboard / gamepad navigation ---------------- */

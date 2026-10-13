@@ -33,7 +33,7 @@ function addHazard(h) {
 
 function enemyBullet(x, y, a, speed, o = {}) {
   if (W.ebullets.length > 1400) return;
-  speed *= 1 + Math.min(0.35, (W.wave - 1) * 0.018);
+  speed *= (1 + Math.min(0.35, (W.wave - 1) * 0.018)) * W.diff.bulletSpeed;
   W.ebullets.push({
     x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, speed,
     r: (o.r || 6) * (W.sizeMult || 1), dmg: o.dmg || 10 * W.dmgScale,
@@ -51,7 +51,7 @@ function addChaos(n) {
   if (before < 100 && W.chaos >= 100) {
     Sound.play('ready');
     const p = W.player;
-    FX.text(p.x, p.y - 40, 'OVERDRIVE READY', '#ff2bd6', 18, 1.4, { pop: 0.5 });
+    FX.text(p.x, p.y - 40, 'RAINBOW READY!', 'rainbow', 20, 1.4, { pop: 0.5 });
   }
 }
 
@@ -118,9 +118,13 @@ function killEnemy(e, o = {}) {
   const p = W.player;
   if (e.boss) { bossDefeated(e); return; }
 
+  // Grumpies don't explode - they get cheered up and float away smiling!
   const sc = e.elite ? 2.2 : clamp(e.r / 16, 0.6, 1.6);
-  FX.explosion(e.x, e.y, e.color[0] === '#' ? e.color : '#ff2bd6', sc);
-  FX.debris(e.x, e.y, e.color, 4 + Math.round(e.r / 5), 260, Math.max(4, e.r * 0.45));
+  FX.sparks(e.x, e.y, e.color, 10 * sc, 300 * Math.sqrt(sc), 0.4);
+  FX.stars(e.x, e.y, 4 + Math.round(sc * 3), '#ffd93b', 240);
+  FX.confetti(e.x, e.y, 6 + Math.round(sc * 6), 260);
+  FX.ring(e.x, e.y, e.color, 4, 40 * sc, 0.3, 4);
+  FX.happy(e.x, e.y, e.color, e.r);
   Game.grid.impulse(e.x, e.y, 200 + e.r * 7, 80 + e.r * 3.5);
   Sound.play('kill', e.r > 20 ? 0.7 : 1);
   if (e.elite) shake(0.25);
@@ -135,6 +139,13 @@ function killEnemy(e, o = {}) {
   if (W.combo === 50) Achievements.unlock('combo50');
   if (W.combo === 150) Achievements.unlock('combo150');
   if (W.kills === 1) Achievements.unlock('first_blood');
+  const praise = PRAISE[W.combo];
+  if (praise) {
+    FX.text(p.x, p.y - 70, praise, 'rainbow', 30 + Math.min(14, W.combo / 20), 1.3, { pop: 1, vy: -40 });
+    FX.stars(p.x, p.y - 40, 16, '#ffd93b', 380);
+    Sound.play('cheer');
+    Voice.say(praise.replace(/!/g, '') + '!');
+  }
   if (o.nuke) W.nukeKills++;
 
   W.score += e.score * comboMult() * W.scoreEventMult * (p.midas ? 1.25 : 1) * (W.overdrive > 0 ? 1.5 : 1);
@@ -142,14 +153,24 @@ function killEnemy(e, o = {}) {
 
   dropXP(e.x, e.y, e.xp * (W.pinata ? 2 : 1));
   const luck = p.luck;
-  if (rng.chance(0.011 + (e.elite ? 0.35 : 0) + (W.pinata ? 0.12 : 0) + luck * 0.004)) dropPickup('heart', e.x, e.y, 1);
+  if (rng.chance(0.011 + (W.diff.id === 'easy' ? 0.012 : 0) + (e.elite ? 0.35 : 0) + (W.pinata ? 0.12 : 0) + luck * 0.004)) dropPickup('heart', e.x, e.y, 1);
   let shardChance = 0.018 + luck * 0.008 + (W.goldRush ? 0.4 : 0) + (p.midas ? 0.08 : 0) + (e.elite ? 1 : 0);
   if (rng.chance(shardChance)) dropPickup('shard', e.x, e.y, e.elite ? 5 : W.goldRush ? rng.int(1, 3) : 1);
   if (rng.chance(0.004 + (e.elite ? 0.12 : 0) + luck * 0.002)) dropPickup('magnet', e.x, e.y, 1);
   if (rng.chance(0.0025 + (e.elite ? 0.06 : 0) + (W.pinata ? 0.01 : 0))) dropPickup('nuke', e.x, e.y, 1);
   if (rng.chance(0.006 + (e.elite ? 0.2 : 0))) dropPickup('chaos', e.x, e.y, 1);
-  if (W.pinata) FX.sparks(e.x, e.y, hsl(frand(0, 360), 100, 65), 14, 380, 0.8, { grav: 500, drag: 1.5 });
+  if (W.pinata) FX.confetti(e.x, e.y, 24, 420);
   if (p.lifesteal > 0 && rng.chance(p.lifesteal)) healPlayer(3);
+}
+
+const PRAISE = { 10: 'NICE!', 25: 'GREAT!', 50: 'AWESOME!', 80: 'AMAZING!', 120: 'SUPERSTAR!', 175: 'INCREDIBLE!', 250: 'LEGENDARY!', 350: 'UNSTOPPABLE!' };
+
+function heartPath(ctx, r) {
+  ctx.beginPath();
+  ctx.moveTo(0, r * 0.9);
+  ctx.bezierCurveTo(-r * 1.3, -r * 0.1, -r * 0.6, -r * 1.1, 0, -r * 0.4);
+  ctx.bezierCurveTo(r * 0.6, -r * 1.1, r * 1.3, -r * 0.1, 0, r * 0.9);
+  ctx.closePath();
 }
 
 function healPlayer(n) {
@@ -163,16 +184,16 @@ function healPlayer(n) {
 function damagePlayer(dmg, sx, sy) {
   const p = W.player;
   if (W.dying > 0 || p.iframes > 0 || p.dashTime > 0 || W.overdrive > 0 || W.bossDeath || W.waveState === 'clear') return false;
-  dmg *= 1 - p.armor;
+  dmg *= (1 - p.armor) * W.diff.enemyDmg;
   p.hp -= dmg;
-  p.iframes = 0.75;
+  p.iframes = W.diff.iframes;
   p.hurtT = 0.15;
   W.stats.taken += dmg;
   W.waveHit = true;
   if (W.boss) W.bossHitTaken = true;
   W.combo = Math.floor(W.combo / 2);
-  shake(0.5);
-  screenFlash('#ff0030', 0.35);
+  shake(0.4);
+  screenFlash('#ff5a7a', 0.22);
   W.hitstop = 0.05;
   if (sx !== undefined) {
     const a = angleTo(sx, sy, p.x, p.y);
@@ -180,7 +201,7 @@ function damagePlayer(dmg, sx, sy) {
   }
   Sound.play('hurt');
   FX.sparks(p.x, p.y, '#ff3b6b', 22, 380, 0.5);
-  FX.text(p.x, p.y - 24, '-' + Math.round(dmg), '#ff3b6b', 20, 0.8, { pop: 0.4 });
+  FX.text(p.x, p.y - 24, rng.pick(['OUCH!', 'OOF!', 'BONK!', 'EEK!']), '#ff8aa0', 20, 0.8, { pop: 0.4 });
   Game.grid.impulse(p.x, p.y, 500, 180);
 
   if (p.novaOnHit > 0) {
@@ -191,9 +212,30 @@ function damagePlayer(dmg, sx, sy) {
 
   if (p.hp <= 0) {
     if (p.secondWind > 0) revivePlayer();
+    else if (W.lives > 1) loseLife();
     else playerDie();
   }
   return true;
+}
+
+function loseLife() {
+  const p = W.player;
+  W.lives--;
+  p.hp = p.maxHp;
+  p.iframes = 3;
+  W.hitstop = 0.25;
+  for (const b of W.ebullets) b.life = 0;
+  for (const e of W.enemies) {
+    if (e.dead || e.boss) continue;
+    const d = dist(p.x, p.y, e.x, e.y);
+    if (d < 500) { const a = angleTo(p.x, p.y, e.x, e.y); e.vx += Math.cos(a) * 900 * (1 - d / 500); e.vy += Math.sin(a) * 900 * (1 - d / 500); }
+  }
+  FX.ring(p.x, p.y, '#ff5ec8', 10, 420, 0.7, 10);
+  FX.confetti(p.x, p.y, 50, 500);
+  Game.grid.impulse(p.x, p.y, 1600, 500);
+  banner('OOPS!', W.lives === 1 ? 'Last life! You can do it!' : W.lives + ' lives left. Keep going!', '#ff5ec8', 2);
+  Sound.play('revive');
+  Voice.say(rng.pick(['Oops! Try again!', 'Whoopsie!', 'Oopsie daisy!']), true);
 }
 
 function revivePlayer() {
@@ -209,7 +251,8 @@ function revivePlayer() {
   Game.grid.impulse(p.x, p.y, 1800, 600);
   shake(0.8);
   screenFlash('#ffe600', 0.6);
-  banner('SECOND WIND', 'Back from the brink!', '#ffe600', 1.8);
+  banner('EXTRA LIFE!', 'You are back!', '#ffd93b', 1.8);
+  Voice.say('Extra life!', true);
   Sound.play('revive');
 }
 
@@ -225,6 +268,7 @@ function playerDie() {
   screenFlash('#ffffff', 0.8);
   Sound.play('bigBoom');
   Sound.setMuffle(true);
+  Voice.say('Good try!', true);
 }
 
 function dropPickup(kind, x, y, value) {
@@ -280,6 +324,8 @@ function bossDefeated(e) {
   W.score += e.score * comboMult();
   W.boss = null;
   W.bossDeath = { x: e.x, y: e.y, t: 2.4, color: e.bossDef.color, tick: 0, r: e.r };
+  banner('YOU DID IT!', e.bossDef.name + ' is happy now!', '#ffd93b', 2.6);
+  Voice.say('You did it! ' + e.bossDef.name.toLowerCase() + ' is happy now!', true);
   W.hitstop = 0.3;
   Sound.play('bigBoom');
   shake(1);
@@ -297,7 +343,7 @@ function bossDefeated(e) {
 
 function pickEvent() {
   const r = W.eventRng;
-  let pool = EVENTS.filter(ev => ev.id !== W.lastEventId);
+  let pool = EVENTS.filter(ev => ev.id !== W.lastEventId && !W.diff.noEvents.includes(ev.id));
   if (W.wave < 4) pool = pool.filter(ev => ev.id !== 'blackout' && ev.id !== 'mirror');
   return r.pick(pool);
 }
@@ -324,11 +370,12 @@ function startWave(n) {
     const bid = BOSS_ORDER[(n / 5 - 1) % BOSS_ORDER.length];
     const b = BOSSES[bid];
     W.pendingBoss = bid;
-    banner('WARNING', b.name + ' · ' + b.title, b.color, 2.5);
+    banner('UH-OH!', b.name + ' is coming! ' + b.title, b.color, 2.5);
     Sound.play('warning');
+    Voice.say('Uh oh! Here comes ' + b.name.toLowerCase() + '!', true);
     Music.start('boss');
   } else {
-    banner('WAVE ' + n, W.pendingEvent ? 'CHAOS EVENT: ' + W.pendingEvent.name : (n === 1 ? 'Survive.' : ''), W.pendingEvent ? W.pendingEvent.color : '#00f0ff', 2.4);
+    banner('WAVE ' + n, W.pendingEvent ? 'SURPRISE: ' + W.pendingEvent.ico + ' ' + W.pendingEvent.name : (n === 1 ? 'Cheer up the Grumpies!' : 'Here they come!'), W.pendingEvent ? W.pendingEvent.color : '#2ee6ff', 2.4);
     Sound.play(W.pendingEvent ? 'event' : 'waveStart');
     Music.start(n > 10 ? 'game2' : 'game');
   }
@@ -373,15 +420,18 @@ function waveCleared() {
   for (const h of W.hazards) if (h.kind === 'meteor' && h.t < h.warn) h.t = 1e9;
   const bonus = 250 * W.wave;
   W.score += bonus;
-  let sub = '+' + fmt(bonus) + ' score';
+  let sub = 'Wave ' + W.wave + ' done!  +' + fmt(bonus) + ' points';
   if (!W.waveHit && W.wave >= 3) {
-    sub = 'FLAWLESS! +' + fmt(bonus * 2) + ' score, +5 shards';
+    sub = 'PERFECT! No ouchies!  +5 💎';
     W.score += bonus;
     W.shards += 5;
     Achievements.unlock('flawless');
   }
-  banner('WAVE ' + W.wave + ' CLEAR', sub, '#3dff9e', 2.2);
+  banner(rng.pick(['HOORAY!', 'WOO-HOO!', 'YAY!', 'GREAT JOB!']), sub, '#4dff9a', 2.2);
   Sound.play('waveClear');
+  Voice.say(rng.pick(['Hooray!', 'Great job!', 'Woo hoo!', 'You rock!']));
+  FX.confetti(W.player.x, W.player.y - 40, 60, 500);
+  Game.checkBreak();
 }
 
 function updateWaves(dt) {
@@ -409,13 +459,18 @@ function updateWaves(dt) {
     if (bd.tick <= 0) {
       bd.tick = 0.11;
       const x = bd.x + frand(-bd.r * 1.5, bd.r * 1.5), y = bd.y + frand(-bd.r * 1.5, bd.r * 1.5);
-      FX.explosion(x, y, bd.color[0] === '#' ? bd.color : '#ff2bd6', frand(1, 2.5));
+      FX.confetti(x, y, 30, 520);
+      FX.stars(x, y, 8, '#ffd93b', 320);
+      FX.ring(x, y, bd.color[0] === '#' ? bd.color : '#ff5ec8', 6, frand(60, 140), 0.4, 6);
       Game.grid.impulse(x, y, 600, 260);
       shake(0.2);
       Sound.play('kill', 0.5);
     }
     if (bd.t <= 0) {
-      FX.explosion(bd.x, bd.y, '#ffffff', 6);
+      FX.confetti(bd.x, bd.y, 140, 900);
+      FX.stars(bd.x, bd.y, 40, '#ffd93b', 600);
+      for (let i = 0; i < 6; i++) FX.happy(bd.x + frand(-60, 60), bd.y + frand(-60, 60), CONFETTI[i], 20);
+      FX.happy(bd.x, bd.y, bd.color[0] === '#' ? bd.color : '#ff5ec8', bd.r * 0.9);
       FX.ring(bd.x, bd.y, bd.color[0] === '#' ? bd.color : '#ff2bd6', 20, 900, 1, 14);
       Game.grid.impulse(bd.x, bd.y, 3000, 1100);
       Sound.play('bigBoom');
@@ -446,11 +501,11 @@ function updateWaves(dt) {
   const prog = W.waveT / W.waveDuration;
   W.spawnT -= dt;
   if (W.spawnT <= 0) {
-    const interval = Math.max(0.13, 0.95 - n * 0.04) * (1 - 0.35 * prog) / (W.spawnEventMult || 1);
+    const interval = Math.max(0.13, 0.95 - n * 0.04) * (1 - 0.35 * prog) / (W.spawnEventMult || 1) / W.diff.spawn;
     W.spawnT = interval * rng.range(0.7, 1.3);
     let alive = 0;
     for (const e of W.enemies) if (!e.dead) alive++;
-    const cap = Math.min(270, 70 + n * 7) * (W.spawnEventMult > 1 ? 1.4 : 1);
+    const cap = Math.min(270, 70 + n * 7) * (W.spawnEventMult > 1 ? 1.4 : 1) * W.diff.spawn;
     if (alive < cap) {
       const pool = ENEMY_TYPES.filter(t => ENEMIES[t].wave <= n);
       const type = rng.weighted(pool, t => ENEMIES[t].weight * (ENEMIES[t].wave === n ? 2.2 : 1));
@@ -461,7 +516,7 @@ function updateWaves(dt) {
     }
   }
   // Encirclement formations: a ring of enemies materialises around the player
-  if (n >= 6) {
+  if (n >= W.diff.formationWave) {
     W.formationT -= dt;
     if (W.formationT <= 0) {
       W.formationT = Math.max(5, rng.range(9, 13) - n * 0.2);
@@ -485,7 +540,7 @@ function spawnFormation(n) {
     const a = off + i / count * TAU;
     spawnEnemy(type, p.x + Math.cos(a) * R, p.y + Math.sin(a) * R, { elite: false });
   }
-  FX.text(p.x, p.y - 60, 'SURROUNDED!', '#ff3b6b', 18, 1, { pop: 0.4 });
+  FX.text(p.x, p.y - 60, 'GRUMPY CIRCLE!', '#ff9b3d', 20, 1, { pop: 0.4 });
   Sound.play('warning');
 }
 
@@ -505,9 +560,9 @@ function rollUpgrades(n) {
     avail.splice(avail.indexOf(u), 1);
   }
   const fillers = [
-    { id: '_heal', name: 'Field Repair', ico: '✚', r: 'common', desc: 'Restore 50% HP', max: 99, apply: p => { p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.5); } },
-    { id: '_cache', name: 'Shard Cache', ico: '◆', r: 'rare', desc: '+20 shards', max: 99, apply: () => { W.shards += 20; } },
-    { id: '_score', name: 'Score Surge', ico: '★', r: 'common', desc: '+5,000 score', max: 99, apply: () => { W.score += 5000; } },
+    { id: '_heal', name: 'Yummy Snack', ico: '🍎', r: 'common', desc: 'Heal half your health!', max: 99, apply: p => { p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.5); } },
+    { id: '_cache', name: 'Gem Bag', ico: '💎', r: 'rare', desc: '+20 gems!', max: 99, apply: () => { W.shards += 20; } },
+    { id: '_score', name: 'Star Bonus', ico: '⭐', r: 'common', desc: '+5,000 points!', max: 99, apply: () => { W.score += 5000; } },
   ];
   let fi = 0;
   while (out.length < n && fi < fillers.length) out.push(fillers[fi++]);
@@ -546,8 +601,10 @@ function activateOverdrive() {
   shake(0.8);
   screenFlash('#ff2bd6', 0.5);
   W.hitstop = 0.12;
-  FX.text(p.x, p.y - 50, 'OVERDRIVE!', '#ffffff', 34, 1.2, { pop: 1 });
+  FX.text(p.x, p.y - 50, 'RAINBOW MODE!', 'rainbow', 36, 1.4, { pop: 1 });
+  FX.confetti(p.x, p.y, 80, 700);
   Sound.play('overdrive');
+  Voice.say('Rainbow mode!', true);
 }
 
 /* ---------------------------------------------------------------------------
@@ -562,7 +619,9 @@ const Game = {
   lastTs: 0,
   fps: 60, fpsAcc: 0, fpsN: 0,
   menuT: 0,
+  playClock: 0,
   stars: [],
+  planets: [],
 
   init() {
     this.canvas = document.getElementById('game');
@@ -582,7 +641,7 @@ const Game = {
     this.h = window.innerHeight;
     this.canvas.width = Math.round(this.w * this.dpr);
     this.canvas.height = Math.round(this.h * this.dpr);
-    this.scale = clamp(Math.min(this.w, this.h) / 760, 0.4, 2.4);
+    this.scale = clamp(Math.min(this.w, this.h) / 680, 0.45, 2.6);
   },
 
   viewRect() {
@@ -627,8 +686,9 @@ const Game = {
     rng.seed(seed);
     const ship = SHIPS.find(s => s.id === shipId) || SHIPS[0];
     const m = Save.data.meta;
+    const diff = DIFFICULTY[Save.data.settings.difficulty] || DIFFICULTY.easy;
     W = {
-      mode, startMode: mode, seed, ship,
+      mode, startMode: mode, seed, ship, diff, lives: diff.lives,
       runRng: new RNG(seed ^ 0xa5a5a5),
       eventRng: new RNG(seed ^ 0x5eed),
       t: 0, realT: 0,
@@ -655,6 +715,19 @@ const Game = {
       }
     }
     if (W.player.secondWind > 0) W.upgrades.secondwind = 1;
+    W.player.maxHp = Math.round(W.player.maxHp * diff.hp);
+    W.player.hp = W.player.maxHp;
+    // First games get friendly on-screen tips
+    if (Save.data.stats.runs < 3) {
+      const touch = Input.device === 'touch', pad = Input.device === 'gp';
+      W.hints = [
+        { ico: '🚀', text: touch ? 'Drag your finger to fly!' : pad ? 'Use the stick to fly!' : 'Fly with the arrow keys!' },
+        { ico: '✨', text: 'Your rocket shoots bubbles all by itself!' },
+        { ico: '⭐', text: 'Grab the stars to level up!' },
+        { ico: '🌈', text: 'Fill the rainbow bar for RAINBOW MODE!' },
+      ];
+      W.hintT = 0;
+    }
     enemyIdSeq = 1;
     FX.clear();
     this.cam.x = W.player.x; this.cam.y = W.player.y; this.cam.trauma = 0;
@@ -666,7 +739,7 @@ const Game = {
     Music.intensity = 0.3;
     startWave(1);
     UI.hideAll();
-    if (mode === 'daily') banner('DAILY CHAOS', todayKey() + ' · Ship: ' + ship.name, '#ffe600', 2.6);
+    if (mode === 'daily') banner('DAILY SURPRISE', todayKey() + ' · Rocket: ' + ship.name, '#ffd93b', 2.6);
   },
 
   pause() {
@@ -691,6 +764,7 @@ const Game = {
     const p = W.player;
     let s = W.shards + Math.max(0, W.bestWaveThisRun - 1) * 6 + W.bossKills * 40 + Math.floor(W.score / 3000) + (victory ? 250 : 0);
     if (W.mode === 'daily') s *= 1.25;
+    s *= W.diff.gems;
     return Math.round(s * p.shardMult);
   },
 
@@ -725,7 +799,7 @@ const Game = {
     if (!W.recorded) {
       W.recorded = true;
       rank = Save.addHighscore({
-        score: Math.floor(W.score), wave: W.wave, ship: W.ship.name, mode: W.mode,
+        score: Math.floor(W.score), wave: W.wave, ship: W.ship.name, mode: W.mode, diff: W.diff.id,
         date: todayKey(), kills: W.kills, level: W.level,
       });
     } else {
@@ -749,6 +823,19 @@ const Game = {
     UI.showGameOver({ victory, earned, rank, isNewBest });
   },
 
+  /* Gentle break reminder for parents (Settings > Break Reminder) */
+  checkBreak() {
+    const mins = Save.data.settings.breakMins;
+    if (!mins || this.playClock < mins * 60) return;
+    this.playClock = 0;
+    setTimeout(() => {
+      if (this.state !== 'playing' || !W || W.dying > 0) return;
+      UI.pauseNote = `You've played for ${mins} minutes! Time for a stretch and a drink of water? 🧃`;
+      Voice.say('Great playing! Time for a little break?', true);
+      this.pause();
+    }, 1600);
+  },
+
   continueEndless() {
     W.mode = 'endless';
     W.over = false;
@@ -757,7 +844,7 @@ const Game = {
     Sound.setMuffle(false);
     UI.hideAll();
     startWave(W.wave + 1);
-    banner('ENDLESS', 'How deep does the chaos go?', '#ff2bd6', 2.4);
+    banner('FOREVER MODE', 'How far can you go?', '#ff5ec8', 2.4);
   },
 
   quitToMenu() {
@@ -774,6 +861,7 @@ const Game = {
     this.state = 'levelup';
     document.body.classList.remove('playing');
     Sound.play('levelUp');
+    Voice.say(rng.pick(['Level up!', 'Power up time!', 'Woo! Level up!']));
     Sound.setMuffle(true);
     const p = W.player;
     FX.ring(p.x, p.y, '#ffe600', 10, 160, 0.5, 6);
@@ -829,7 +917,7 @@ const Game = {
     }
     if (w.overdrive > 0) {
       w.overdrive -= dt;
-      if (w.overdrive <= 0) { FX.text(p.x, p.y - 40, 'overdrive ended', '#8a8fb8', 14, 0.9); }
+
     }
 
     // combo decay
@@ -851,6 +939,11 @@ const Game = {
       if (b.t > b.dur) w.banners.splice(i, 1);
     }
     if (w.flash) { w.flash.a -= rdt * 2.2; if (w.flash.a <= 0) w.flash = null; }
+    if (w.hints && w.waveState === 'fight') {
+      w.hintT += rdt;
+      if (w.hintT > 4.2) { w.hints.shift(); w.hintT = 0; if (!w.hints.length) w.hints = null; }
+    }
+    Game.playClock += rdt;
 
     // music intensity follows the action
     const alive = w.enemies.length;
@@ -1142,18 +1235,18 @@ const Game = {
         break;
       case 'shard':
         w.shards += pk.value;
-        FX.text(pk.x, pk.y - 10, '+' + pk.value + ' ◆', '#ffe600', 14, 0.7);
+        FX.text(pk.x, pk.y - 10, '+' + pk.value + ' 💎', '#7df9ff', 16, 0.7);
         Sound.play('shard');
         break;
       case 'magnet':
         w.magnetAll = 2;
         FX.ring(p.x, p.y, '#00f0ff', 10, 400, 0.5, 4);
-        FX.text(p.x, p.y - 30, 'MAGNET!', '#00f0ff', 18, 0.9, { pop: 0.4 });
+        FX.text(p.x, p.y - 30, 'MAGNET!', '#2ee6ff', 20, 0.9, { pop: 0.4 });
         Sound.play('select');
         break;
       case 'chaos':
         addChaos(30);
-        FX.text(p.x, p.y - 30, '+CHAOS', '#ff2bd6', 16, 0.8);
+        FX.text(p.x, p.y - 30, '+RAINBOW', 'rainbow', 18, 0.8);
         Sound.play('shard');
         break;
       case 'nuke': {
@@ -1172,7 +1265,9 @@ const Game = {
         FX.ring(p.x, p.y, '#ffb000', 10, 1200, 0.9, 20);
         this.grid.impulse(p.x, p.y, 3000, 1200);
         Sound.play('bigBoom');
-        FX.text(p.x, p.y - 40, 'NUKE!', '#ffb000', 36, 1.2, { pop: 1 });
+        FX.text(p.x, p.y - 40, 'MEGA STAR!', 'rainbow', 38, 1.3, { pop: 1 });
+        FX.confetti(p.x, p.y, 90, 800);
+        Voice.say('Mega star!', true);
         break;
       }
     }
@@ -1220,9 +1315,13 @@ const Game = {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#05010f';
+    const bg = ctx.createLinearGradient(0, 0, 0, this.h);
+    bg.addColorStop(0, '#1a0b52');
+    bg.addColorStop(1, '#0a0428');
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, this.w, this.h);
     this.drawStars(ctx);
+    this.drawPlanets(ctx);
 
     const c = this.cam;
     ctx.save();
@@ -1233,9 +1332,9 @@ const Game = {
     const v = this.viewRect();
 
     // arena floor + grid
-    ctx.fillStyle = 'rgba(20,6,48,0.55)';
+    ctx.fillStyle = 'rgba(40,20,110,0.35)';
     ctx.fillRect(0, 0, ARENA_W, ARENA_H);
-    let gridCol = '#6a3dff';
+    let gridCol = '#7b6bff';
     if (W && W.overdrive > 0) gridCol = quantizeColor(hsl((W.t * 200) % 360, 100, 60));
     else if (W && W.event) gridCol = W.event.color;
     else if (W && W.boss) gridCol = W.boss.color[0] === '#' ? W.boss.color : '#ff2bd6';
@@ -1290,6 +1389,52 @@ const Game = {
     ctx.globalAlpha = 1;
   },
 
+  /* Sleepy cartoon planets drifting far behind the arena */
+  drawPlanets(ctx) {
+    if (!this.planets.length) {
+      const cols = [['#ff9b3d', '#ffd93b'], ['#4aa8ff', '#2ee6ff'], ['#ff5ec8', '#c46bff'], ['#4dff9a', '#2ee6ff'], ['#c46bff', '#ff5ec8']];
+      for (let i = 0; i < 5; i++) {
+        this.planets.push({ x: (i + 0.5) / 5 + frand(-0.06, 0.06), y: frand(0.1, 0.9), r: frand(28, 70), d: frand(0.04, 0.1), c: cols[i], ring: i % 2 === 0, ph: frand(0, TAU) });
+      }
+    }
+    const c = this.cam, t = this.menuT + (W ? W.t : 0);
+    const SW = this.w + 300, SH = this.h + 300;
+    for (const p of this.planets) {
+      const x = ((p.x * SW - c.x * p.d) % SW + SW) % SW - 150;
+      const y = ((p.y * SH - c.y * p.d) % SH + SH) % SH - 150 + Math.sin(t * 0.4 + p.ph) * 8;
+      const r = p.r;
+      ctx.save();
+      ctx.globalAlpha = 0.32;
+      ctx.translate(x, y);
+      if (p.ring) {
+        ctx.strokeStyle = p.c[1]; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.ellipse(0, 0, r * 1.6, r * 0.42, -0.35, Math.PI, TAU); ctx.stroke();
+      }
+      const g = ctx.createRadialGradient(-r * 0.35, -r * 0.35, r * 0.1, 0, 0, r);
+      g.addColorStop(0, p.c[1]); g.addColorStop(1, p.c[0]);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+      // sleepy face: closed eyes and a little smile
+      ctx.strokeStyle = 'rgba(30,10,60,0.7)'; ctx.lineWidth = Math.max(2, r * 0.06); ctx.lineCap = 'round';
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * 0.32, -r * 0.05, r * 0.14, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(0, r * 0.22, r * 0.12, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,120,170,0.6)';
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * 0.55, r * 0.15, r * 0.1, 0, TAU); ctx.fill(); }
+      if (p.ring) {
+        ctx.strokeStyle = p.c[1]; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.ellipse(0, 0, r * 1.6, r * 0.42, -0.35, 0, Math.PI); ctx.stroke();
+      }
+      // floating "z"s
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `700 ${Math.round(r * 0.35)}px Fredoka, Arial, sans-serif`;
+      const zt = (t * 0.5 + p.ph) % 1;
+      ctx.globalAlpha = 0.5 * (1 - zt);
+      ctx.fillText('z', r * 0.7 + zt * r * 0.5, -r * 0.6 - zt * r * 0.8);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  },
+
   drawBorder(ctx) {
     const t = this.menuT + (W ? W.t : 0);
     const col = W && W.boss ? (W.boss.color[0] === '#' ? W.boss.color : '#ff2bd6') : '#ff2bd6';
@@ -1306,49 +1451,67 @@ const Game = {
 
   drawPickups(ctx) {
     const t = W.t;
-    ctx.globalCompositeOperation = 'lighter';
     for (const pk of W.pickups) {
       const blink = pk.life < 3 && Math.floor(pk.life * 8) % 2 === 0;
       if (blink) continue;
       let col;
       switch (pk.kind) {
-        case 'xp': col = pk.value >= 25 ? '#ff2bd6' : pk.value >= 5 ? '#3dff9e' : '#00f0ff'; break;
-        case 'heart': col = '#ff3b6b'; break;
-        case 'shard': col = '#ffe600'; break;
-        case 'magnet': col = '#00f0ff'; break;
-        case 'nuke': col = '#ffb000'; break;
-        default: col = '#ff2bd6';
+        case 'xp': col = pk.value >= 25 ? '#ff5ec8' : pk.value >= 5 ? '#4dff9a' : '#ffd93b'; break;
+        case 'heart': col = '#ff5a7a'; break;
+        case 'shard': col = '#7df9ff'; break;
+        case 'magnet': col = '#2ee6ff'; break;
+        case 'nuke': col = quantizeColor(hsl((t * 300) % 360, 100, 60)); break;
+        default: col = '#ff5ec8';
       }
       const g = pk.r * 3.2;
-      ctx.globalAlpha = 0.6;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.55;
       ctx.drawImage(FX.glow(col), pk.x - g, pk.y - g, g * 2, g * 2);
       ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.save();
       ctx.translate(pk.x, pk.y);
-      ctx.strokeStyle = col;
+      ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = col;
       ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
       const r = pk.r;
-      if (pk.kind === 'xp' || pk.kind === 'shard') {
-        ctx.rotate(t * 2 + pk.x);
-        ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(0, r * 1.3); ctx.lineTo(-r, 0); ctx.lineTo(0, -r * 1.3); ctx.closePath();
-        ctx.globalAlpha = 0.5; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke();
+      if (pk.kind === 'xp') {
+        // twinkly star
+        ctx.rotate(Math.sin(t * 3 + pk.x) * 0.4);
+        starPath(ctx, r * 1.45);
+        ctx.fill(); ctx.stroke();
+      } else if (pk.kind === 'shard') {
+        ctx.scale(1 + Math.sin(t * 5 + pk.y) * 0.08, 1);
+        ctx.beginPath(); ctx.moveTo(-r, -r * 0.35); ctx.lineTo(-r * 0.5, -r * 0.9); ctx.lineTo(r * 0.5, -r * 0.9); ctx.lineTo(r, -r * 0.35); ctx.lineTo(0, r * 1.05); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-r, -r * 0.35); ctx.lineTo(r, -r * 0.35); ctx.stroke();
       } else if (pk.kind === 'heart') {
-        const s = 1 + Math.sin(t * 6) * 0.12;
+        const s = 1 + Math.sin(t * 6) * 0.14;
         ctx.scale(s, s);
-        ctx.fillRect(-r * 0.3, -r, r * 0.6, r * 2);
-        ctx.fillRect(-r, -r * 0.3, r * 2, r * 0.6);
+        heartPath(ctx, r * 1.1);
+        ctx.fill(); ctx.stroke();
       } else if (pk.kind === 'magnet') {
-        ctx.beginPath(); ctx.arc(0, 0, r, Math.PI, 0); ctx.lineWidth = 5; ctx.stroke();
-        ctx.fillRect(-r - 2.5, 0, 5, r * 0.6); ctx.fillRect(r - 2.5, 0, 5, r * 0.6);
+        ctx.rotate(Math.sin(t * 4) * 0.3);
+        ctx.lineCap = 'butt';
+        ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(0, 0, r * 0.8, Math.PI, 0); ctx.stroke();
+        ctx.fillStyle = '#ff5a7a'; ctx.fillRect(-r * 0.8 - 3, 0, 6, r * 0.5); ctx.fillRect(r * 0.8 - 3, 0, 6, r * 0.5);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(-r * 0.8 - 3, r * 0.5, 6, r * 0.35); ctx.fillRect(r * 0.8 - 3, r * 0.5, 6, r * 0.35);
       } else if (pk.kind === 'nuke') {
-        ctx.rotate(t * 2);
-        ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
-        for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, r * 0.8, k * TAU / 3, k * TAU / 3 + 0.9); ctx.closePath(); ctx.fill(); }
+        // MEGA STAR: big rainbow star with a face
+        ctx.rotate(t * 1.5);
+        starPath(ctx, r * 1.9);
+        ctx.fill(); ctx.lineWidth = 3; ctx.stroke();
+        ctx.rotate(-t * 1.5);
+        drawFace(ctx, 0, 2, r * 0.75, { mood: 'happy' });
       } else {
-        ctx.rotate(-t * 3);
-        shapePath(ctx, 'star', r * 1.2);
-        ctx.stroke();
+        // rainbow orb
+        const gr = ctx.createLinearGradient(-r, -r, r, r);
+        CONFETTI.forEach((c, i) => gr.addColorStop(i / (CONFETTI.length - 1), c));
+        ctx.fillStyle = gr;
+        ctx.rotate(t * 2);
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); ctx.stroke();
       }
       ctx.restore();
     }
@@ -1363,20 +1526,22 @@ const Game = {
     const glow = FX.glow(base);
     for (const b of W.bullets) {
       const col = b.color || (od ? quantizeColor(hsl((W.t * 500 + b.x) % 360, 100, 60)) : base);
-      const g = b.r * 4.5;
-      ctx.globalAlpha = 0.7;
+      const g = b.r * 4.2;
+      ctx.globalAlpha = 0.65;
       ctx.drawImage(b.color || od ? FX.glow(col) : glow, b.x - g, b.y - g, g * 2, g * 2);
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = b.r * 1.1;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.x - b.vx * 0.022, b.y - b.vy * 0.022);
-      ctx.stroke();
     }
-    ctx.lineCap = 'butt';
+    // sparkle bubbles
     ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 2;
+    for (const b of W.bullets) {
+      const r = b.r * 1.15;
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.strokeStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(b.x - r * 0.35, b.y - r * 0.35, r * 0.3, 0, TAU); ctx.fill();
+    }
   },
 
   drawEnemyBullets(ctx) {

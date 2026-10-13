@@ -24,8 +24,9 @@ const Save = {
       daily: { key: '', best: 0, played: 0 },
       settings: {
         master: 0.8, music: 0.6, sfx: 0.8,
-        shake: 1, particles: 1, autofire: true, damageNumbers: true,
-        crt: true, showFps: false, flashes: true, aimAssist: true,
+        shake: 0.6, particles: 1, autofire: true, damageNumbers: false,
+        crt: false, showFps: false, flashes: true,
+        difficulty: 'easy', autoAim: true, voice: true, breakMins: 30,
       },
       seenHowTo: false,
     };

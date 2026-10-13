@@ -38,7 +38,8 @@ function bossPhaseCheck(e) {
     Game.grid.impulse(e.x, e.y, 900, 420);
     shake(0.6);
     Sound.play('warning');
-    banner('PHASE ' + want, e.bossDef.name + ' is enraged!', e.color, 1.6);
+    banner('UH-OH!', e.bossDef.name + ' is getting EXTRA grumpy!', e.color, 1.6);
+    Voice.say('Uh oh!');
     // clear bullets as a breather
     for (const b of W.ebullets) b.life = Math.min(b.life, 0.15);
   }
@@ -55,7 +56,7 @@ function hover(e, dt, p, range, spd) {
 const BOSSES = {
   /* ---------------------------------------------------------------- HIVE */
   hive: {
-    name: 'HIVE QUEEN', title: 'Mother of the Swarm', color: '#ffb000', hp: 4000, r: 62, speed: 85, dmg: 20,
+    name: 'QUEEN BUZZ', title: 'The Bossy Bee', color: '#ffb000', hp: 4000, r: 62, speed: 85, dmg: 20,
     score: 2500, xp: 60, phases: [0.5, 0.2],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -116,7 +117,7 @@ const BOSSES = {
 
   /* --------------------------------------------------------- OBLITERATOR */
   obliterator: {
-    name: 'OBLITERATOR', title: 'Siege Engine Mk.IX', color: '#ff3b3b', hp: 12000, r: 58, speed: 95, dmg: 22,
+    name: 'ROBO GRUMP', title: 'The Big Grumpy Robot', color: '#ff3b3b', hp: 12000, r: 58, speed: 95, dmg: 22,
     score: 5000, xp: 100, phases: [0.5, 0.25],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -198,7 +199,7 @@ const BOSSES = {
 
   /* ---------------------------------------------------------- MIRRORMIND */
   mirror: {
-    name: 'MIRRORMIND', title: 'The Thousand Reflections', color: '#7dffef', hp: 22000, r: 54, speed: 110, dmg: 22,
+    name: 'COPYCAT CRYSTAL', title: 'Sees Double, Makes Trouble', color: '#7dffef', hp: 22000, r: 54, speed: 110, dmg: 22,
     score: 9000, xp: 150, phases: [0.55, 0.25],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -280,7 +281,7 @@ const BOSSES = {
 
   /* -------------------------------------------------------- CHAOS ENGINE */
   engine: {
-    name: 'CHAOS ENGINE', title: 'Heart of the Madness', color: '#ff2bd6', hp: 45000, r: 84, speed: 70, dmg: 30,
+    name: 'KING GRUMPUS', title: 'The Grumpiest of All', color: '#ff2bd6', hp: 45000, r: 84, speed: 70, dmg: 30,
     score: 20000, xp: 250, phases: [0.66, 0.33],
     update(e, dt, p) {
       bossPhaseCheck(e);
@@ -357,7 +358,7 @@ const BOSSES = {
 
 /* Mirrormind's reflections */
 ENEMIES.clone = {
-  name: 'Reflection', hp: 70, speed: 140, r: 24, dmg: 14, score: 50, xp: 3, color: '#7dffef', shape: 'ring',
+  name: 'Copycat', hp: 70, speed: 140, r: 24, dmg: 14, score: 50, xp: 3, color: '#7dffef', shape: 'ring',
   wave: 999, weight: 0,
   update(e, dt, p) {
     const o = e.owner && !e.owner.dead ? e.owner : null;

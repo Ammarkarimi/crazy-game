@@ -8,7 +8,7 @@ const HUD = {
 
   keyLabel(action) {
     const d = Input.device;
-    if (action === 'overdrive') return d === 'gp' ? 'Y' : d === 'touch' ? 'OVR' : 'Q';
+    if (action === 'overdrive') return d === 'gp' ? 'Y' : d === 'touch' ? '🌈' : 'Q';
     if (action === 'dash') return d === 'gp' ? 'A' : d === 'touch' ? 'DASH' : 'SPACE';
     return '';
   },
@@ -23,8 +23,8 @@ const HUD = {
     ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   },
 
-  text(ctx, str, x, y, size, color, align = 'left', weight = 800) {
-    ctx.font = `${weight} ${size}px Segoe UI, Helvetica Neue, Arial, sans-serif`;
+  text(ctx, str, x, y, size, color, align = 'left', weight = 700) {
+    ctx.font = `${Math.min(weight, 700)} ${size}px Fredoka, Segoe UI, Helvetica Neue, Arial, sans-serif`;
     ctx.textAlign = align;
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = color;
@@ -59,23 +59,29 @@ const HUD = {
 
     // ---- HP ----
     const bw = small ? 150 : 260;
-    this.bar(ctx, pad, top, bw, small ? 12 : 16, hpf, hpf < 0.3 ? '#ff3b6b' : '#3dff9e');
-    this.text(ctx, `${Math.ceil(Math.max(0, p.hp))} / ${Math.round(p.maxHp)}`, pad + 6, top + (small ? 10 : 13), small ? 10 : 12, '#05010f', 'left', 900);
-    if (p.secondWind > 0) this.text(ctx, '☥', pad + bw + 8, top + 14, 16, '#ffe600');
+    this.bar(ctx, pad, top, bw, small ? 14 : 18, hpf, hpf < 0.3 ? '#ff5a7a' : '#4dff9a');
+    this.text(ctx, `❤ ${Math.ceil(Math.max(0, p.hp))} / ${Math.round(p.maxHp)}`, pad + 6, top + (small ? 12 : 15), small ? 11 : 14, '#1a0b52', 'left', 700);
+    // lives
+    ctx.font = `${small ? 16 : 20}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif`;
+    ctx.textAlign = 'left';
+    let hx = pad + bw + 8;
+    for (let i = 0; i < w.lives; i++) { ctx.fillText('❤️', hx, top + (small ? 14 : 17)); hx += small ? 20 : 25; }
+    if (p.secondWind > 0) ctx.fillText('💖', hx, top + (small ? 14 : 17));
 
     // ---- chaos meter ----
-    const cy = top + (small ? 18 : 24);
+    const cy = top + (small ? 20 : 26);
     const od = w.overdrive > 0;
     const cf = od ? w.overdrive / p.odDuration : w.chaos / 100;
     const ready = !od && w.chaos >= 100;
-    const ccol = od ? hsl((w.t * 400) % 360, 100, 60) : ready ? (Math.floor(w.realT * 6) % 2 ? '#ff2bd6' : '#ffffff') : '#ff2bd6';
-    this.bar(ctx, pad, cy, bw, small ? 8 : 10, cf, ccol);
-    this.text(ctx, od ? 'OVERDRIVE' : ready ? `OVERDRIVE READY [${this.keyLabel('overdrive')}]` : 'CHAOS', pad, cy + (small ? 20 : 24), small ? 10 : 12, ready || od ? '#ff8ef0' : '#8a8fb8');
+    const rg = ctx.createLinearGradient(pad, 0, pad + bw, 0);
+    CONFETTI.forEach((c, i) => rg.addColorStop(i / (CONFETTI.length - 1), c));
+    this.bar(ctx, pad, cy, bw, small ? 9 : 12, cf, ready && Math.floor(w.realT * 6) % 2 ? '#ffffff' : rg);
+    this.text(ctx, od ? '🌈 RAINBOW MODE!' : ready ? `🌈 RAINBOW READY! [${this.keyLabel('overdrive')}]` : '🌈 RAINBOW', pad, cy + (small ? 22 : 28), small ? 12 : 15, ready || od ? '#ffd93b' : '#b9b3e6');
 
     // ---- dash ----
     const df = 1 - Math.max(0, p.dashTimer) / p.dashCd;
-    this.bar(ctx, pad, cy + (small ? 26 : 32), small ? 70 : 100, 4, df, df >= 1 ? '#00f0ff' : '#2a6a80');
-    this.text(ctx, 'DASH', pad + (small ? 76 : 106), cy + (small ? 31 : 37), 10, df >= 1 ? '#00f0ff' : '#8a8fb8');
+    this.bar(ctx, pad, cy + (small ? 29 : 37), small ? 70 : 100, 6, df, df >= 1 ? '#2ee6ff' : '#3a6a90');
+    this.text(ctx, '💨 DASH', pad + (small ? 76 : 106), cy + (small ? 35 : 43), 12, df >= 1 ? '#2ee6ff' : '#b9b3e6');
 
     // ---- wave / boss ----
     const cx = sw / 2;
@@ -96,7 +102,7 @@ const HUD = {
       }
     }
     if (w.event) {
-      this.text(ctx, '⚠ ' + w.event.name, cx, top + (small ? 56 : 70), small ? 11 : 13, w.event.color, 'center', 900);
+      this.text(ctx, w.event.ico + ' ' + w.event.name, cx, top + (small ? 58 : 74), small ? 13 : 17, w.event.color, 'center', 700);
     }
 
     // ---- score / combo ----
@@ -104,16 +110,16 @@ const HUD = {
     if (Math.abs(w.score - this.shownScore) < 1) this.shownScore = w.score;
     const rx = sw - pad;
     this.text(ctx, fmt(this.shownScore), rx, top + (small ? 16 : 22), small ? 18 : 26, '#ffffff', 'right', 900);
-    this.text(ctx, '◆ ' + w.shards, rx, top + (small ? 32 : 42), small ? 11 : 13, '#ffe600', 'right');
+    this.text(ctx, '💎 ' + w.shards, rx, top + (small ? 34 : 46), small ? 13 : 17, '#7df9ff', 'right');
     if (w.combo > 1) {
       const cm = comboMult();
       const pulse = 1 + Math.max(0, w.comboT - 2.3) * 0.8;
-      this.text(ctx, `${w.combo} COMBO  x${cm.toFixed(2)}`, rx, top + (small ? 48 : 64), Math.round((small ? 12 : 15) * pulse), w.combo >= 50 ? '#ff2bd6' : '#00f0ff', 'right', 900);
+      this.text(ctx, `🔥 ${w.combo} COMBO  x${cm.toFixed(1)}`, rx, top + (small ? 48 : 64), Math.round((small ? 12 : 15) * pulse), w.combo >= 50 ? '#ff2bd6' : '#00f0ff', 'right', 900);
       this.bar(ctx, rx - (small ? 90 : 140), top + (small ? 53 : 70), small ? 90 : 140, 3, w.comboT / 2.6, '#00f0ff');
     }
 
     // ---- XP bar ----
-    const xpH = 6;
+    const xpH = 10;
     const xy = sh - xpH - (small ? 4 : 0);
     ctx.fillStyle = 'rgba(255,255,255,0.06)';
     ctx.fillRect(0, xy, sw, xpH);
@@ -121,7 +127,7 @@ const HUD = {
     xg.addColorStop(0, '#00f0ff'); xg.addColorStop(1, '#ff2bd6');
     ctx.fillStyle = xg;
     ctx.fillRect(0, xy, sw * clamp(w.xp / w.xpNext, 0, 1), xpH);
-    this.text(ctx, 'LV ' + w.level, pad, xy - 6, small ? 13 : 16, '#ffffff', 'left', 900);
+    this.text(ctx, '⭐ LEVEL ' + w.level, pad, xy - 8, small ? 15 : 19, '#ffd93b', 'left', 700);
 
     // ---- minimap ----
     if (Input.device === 'touch') this.drawMinimap(ctx, pad, xy - 30 - 80, 112);
@@ -146,6 +152,23 @@ const HUD = {
       }
     }
 
+    // ---- tutorial tip bubble ----
+    if (w.hints && w.hints.length && w.waveState === 'fight') {
+      const h = w.hints[0];
+      const a = Math.min(1, w.hintT * 4, (4.2 - w.hintT) * 4);
+      const fs = small ? 17 : 24;
+      ctx.font = `700 ${fs}px Fredoka, Arial, sans-serif`;
+      const tw = ctx.measureText(h.ico + '  ' + h.text).width + 40;
+      const bx = cx - tw / 2, by = sh - (small ? 90 : 120);
+      ctx.globalAlpha = Math.max(0, a);
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.roundRect(bx, by, tw, fs + 26, 20); ctx.fill();
+      ctx.fillStyle = '#1a0b52';
+      ctx.textAlign = 'center';
+      ctx.fillText(h.ico + '  ' + h.text, cx, by + fs + 6 + Math.sin(w.realT * 5) * 1.5);
+      ctx.globalAlpha = 1;
+    }
+
     // ---- banners ----
     for (const b of w.banners) {
       const k = b.t / b.dur;
@@ -158,9 +181,9 @@ const HUD = {
       ctx.scale(sc, sc);
       ctx.shadowColor = b.color;
       ctx.shadowBlur = 24;
-      this.text(ctx, b.text, 0, 0, small ? 34 : 56, '#ffffff', 'center', 900);
+      this.text(ctx, b.text, 0, 0, small ? 38 : 64, '#ffffff', 'center', 700);
       ctx.shadowBlur = 0;
-      if (b.sub) this.text(ctx, b.sub, 0, small ? 28 : 40, small ? 13 : 18, b.color, 'center', 800);
+      if (b.sub) this.text(ctx, b.sub, 0, small ? 30 : 44, small ? 15 : 22, b.color, 'center', 700);
       ctx.restore();
       ctx.globalAlpha = 1;
     }

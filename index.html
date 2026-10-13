@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <title>HYPERCHAOS</title>
-  <meta name="description" content="HYPERCHAOS - a neon arena roguelite. Survive 20 waves of escalating madness, build absurd weapon combos and unleash OVERDRIVE.">
-  <meta name="theme-color" content="#05010f">
+  <title>HYPERCHAOS - Super Silly Space Adventure</title>
+  <meta name="description" content="HYPERCHAOS - a super silly space adventure for kids and grown-ups. Fly your rocket, cheer up the Grumpies with sparkle bubbles and collect stickers!">
+  <meta name="theme-color" content="#0d0630">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/style.css">
@@ -16,78 +16,80 @@
 
   <!-- Touch controls (shown automatically on touch devices) -->
   <div id="touch" aria-hidden="true">
-    <button id="tDash" class="tbtn">DASH</button>
-    <button id="tOver" class="tbtn over">OVR</button>
+    <button id="tDash" class="tbtn"><i class="emo">💨</i>DASH</button>
+    <button id="tOver" class="tbtn over"><i class="emo">🌈</i>RAINBOW</button>
     <button id="tPause" class="tbtn pause">II</button>
   </div>
 
   <div id="ui">
     <section id="scr-boot" class="screen active">
-      <div class="logo"><span class="glitch" data-text="HYPERCHAOS">HYPERCHAOS</span></div>
-      <button class="btn primary big" data-act="boot">PRESS TO START</button>
-      <p class="hint">Best with sound on · Keyboard + mouse, gamepad or touch</p>
+      <div class="logo"><span class="rainbow" aria-label="HYPERCHAOS"><span>H</span><span>Y</span><span>P</span><span>E</span><span>R</span><span>C</span><span>H</span><span>A</span><span>O</span><span>S</span></span></div>
+      <button class="btn primary big" data-act="boot"><i class="emo">🚀</i>LET'S PLAY!</button>
+      <p class="hint">Turn the sound on! <span class="emo">🔊</span></p>
     </section>
 
     <section id="scr-title" class="screen">
       <div class="logo">
-        <span class="glitch" data-text="HYPERCHAOS">HYPERCHAOS</span>
-        <div class="tagline">NEON ARENA ROGUELITE</div>
+        <span class="rainbow" aria-label="HYPERCHAOS"><span>H</span><span>Y</span><span>P</span><span>E</span><span>R</span><span>C</span><span>H</span><span>A</span><span>O</span><span>S</span></span>
+        <div class="tagline">SUPER SILLY SPACE ADVENTURE</div>
       </div>
       <div class="menu">
-        <button class="btn primary" data-act="play">PLAY</button>
-        <button class="btn" data-act="daily">DAILY CHAOS <small id="dailyInfo"></small></button>
-        <button class="btn" data-act="endless">ENDLESS <small id="endlessInfo"></small></button>
-        <button class="btn" data-act="shop">UPGRADES</button>
-        <button class="btn" data-act="achievements">ACHIEVEMENTS</button>
-        <button class="btn" data-act="records">RECORDS</button>
-        <button class="btn" data-act="settings">SETTINGS</button>
-        <button class="btn" data-act="howto">HOW TO PLAY</button>
-        <button class="btn" data-act="quit" id="btnQuit" hidden>QUIT</button>
+        <button class="btn primary" data-act="play"><i class="emo">▶️</i>PLAY</button>
+        <button class="btn pink" data-act="daily"><i class="emo">🎁</i>DAILY SURPRISE <small id="dailyInfo"></small></button>
+        <button class="btn blue" data-act="endless"><i class="emo">♾️</i>FOREVER MODE <small id="endlessInfo"></small></button>
+        <button class="btn yellow" data-act="shop"><i class="emo">🛒</i>SHOP</button>
+        <button class="btn" data-act="achievements"><i class="emo">⭐</i>STICKERS</button>
+        <button class="btn" data-act="records"><i class="emo">🏆</i>MY SCORES</button>
+        <button class="btn" data-act="settings"><i class="emo">⚙️</i>SETTINGS</button>
+        <button class="btn" data-act="howto"><i class="emo">❓</i>HOW TO PLAY</button>
+        <button class="btn danger" data-act="quit" id="btnQuit" hidden><i class="emo">👋</i>QUIT</button>
       </div>
       <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
       <div class="footer"><span id="version"></span> · <a href="#" data-act="credits">Credits</a></div>
     </section>
 
     <section id="scr-hangar" class="screen">
-      <h2>HANGAR</h2>
+      <h2>PICK YOUR ROCKET</h2>
       <p class="sub" id="hangarMode"></p>
       <div id="shipList" class="ship-list"></div>
+      <div class="diff-row" id="diffRow"></div>
+      <div class="diff-note" id="diffNote"></div>
       <div class="row">
-        <button class="btn" data-act="back">BACK</button>
-        <button class="btn primary" data-act="launch" id="btnLaunch">LAUNCH</button>
+        <button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button>
+        <button class="btn primary" data-act="launch" id="btnLaunch"><i class="emo">🚀</i>BLAST OFF!</button>
       </div>
       <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
     </section>
 
     <section id="scr-shop" class="screen">
-      <h2>UPGRADES</h2>
-      <p class="sub">Permanent boosts. Earn shards by playing.</p>
+      <h2>SHOP</h2>
+      <p class="sub">Spend your gems on super powers that last forever!</p>
       <div id="shopList" class="grid-list"></div>
-      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div class="row"><button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button></div>
       <div class="wallet"><span class="shard-ico"></span><span class="shards">0</span></div>
     </section>
 
     <section id="scr-achievements" class="screen">
-      <h2>ACHIEVEMENTS</h2>
+      <h2>STICKER BOOK</h2>
       <p class="sub" id="achCount"></p>
-      <div id="achList" class="grid-list"></div>
-      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div id="achList" class="sticker-grid"></div>
+      <div class="row"><button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button></div>
     </section>
 
     <section id="scr-records" class="screen">
-      <h2>RECORDS</h2>
+      <h2>MY SCORES</h2>
       <div id="recStats" class="stats"></div>
-      <h3>TOP RUNS</h3>
+      <h3>BEST GAMES</h3>
       <div id="recList" class="rec-list"></div>
-      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div class="row"><button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button></div>
     </section>
 
     <section id="scr-settings" class="screen">
       <h2>SETTINGS</h2>
       <div id="setList" class="settings"></div>
       <div class="row">
-        <button class="btn" data-act="back">BACK</button>
-        <button class="btn danger" data-act="resetSave">RESET PROGRESS</button>
+        <button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button>
+        <button class="btn danger" data-act="resetSave">START OVER</button>
       </div>
     </section>
 
@@ -95,72 +97,73 @@
       <h2>HOW TO PLAY</h2>
       <div class="howto">
         <div class="col">
-          <h3>SURVIVE</h3>
-          <p>Clear <b>20 waves</b> of neon horrors. Every 5th wave a <b>boss</b> arrives.</p>
-          <p>Collect <span class="c-cyan">XP crystals</span> to level up and pick upgrades. Stack them into ridiculous builds.</p>
-          <p>Kills charge your <span class="c-mag">CHAOS meter</span>. When full, unleash <b>OVERDRIVE</b>: invincibility, triple fire rate and slowed time.</p>
-          <p>From wave 2, <span class="c-yel">CHAOS EVENTS</span> can twist the rules: meteor storms, mirror worlds, black holes and more.</p>
-          <p>Spend <span class="c-yel">shards</span> on permanent upgrades and new ships.</p>
+          <div class="step"><span class="emo">🚀</span><div><b>Fly your rocket!</b> It shoots sparkle bubbles all by itself.</div></div>
+          <div class="step"><span class="emo">😠</span><div>The <b>Grumpies</b> are grumpy. Hit them with bubbles to <b>cheer them up!</b> <span class="emo">😊</span></div></div>
+          <div class="step"><span class="emo">⭐</span><div>Grab the <b>stars</b> to <b>level up</b> and pick a new super power!</div></div>
+          <div class="step"><span class="emo">🌈</span><div>Fill the <b>rainbow</b> bar, then press the rainbow button for <b>RAINBOW MODE!</b></div></div>
+          <div class="step"><span class="emo">💎</span><div>Collect <b>gems</b> to buy new rockets and powers in the <b>shop</b>.</div></div>
+          <div class="step"><span class="emo">❤️</span><div>Don't bump into Grumpies or their bubbles! Grab <b>hearts</b> to heal.</div></div>
         </div>
         <div class="col">
-          <h3>CONTROLS</h3>
+          <h3>BUTTONS</h3>
           <table class="keys">
-            <tr><td>Move</td><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · Left stick</td></tr>
-            <tr><td>Aim</td><td>Mouse · Right stick (auto-aim if idle)</td></tr>
-            <tr><td>Fire</td><td>Auto-fire (toggle in settings) · LMB · RT</td></tr>
-            <tr><td>Dash</td><td><kbd>Space</kbd> / <kbd>Shift</kbd> · A / LB</td></tr>
-            <tr><td>Overdrive</td><td><kbd>Q</kbd> / <kbd>E</kbd> / RMB · Y / RB</td></tr>
-            <tr><td>Pick upgrade</td><td><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> · D-pad + A</td></tr>
-            <tr><td>Reroll</td><td><kbd>R</kbd> · X</td></tr>
-            <tr><td>Pause</td><td><kbd>Esc</kbd> / <kbd>P</kbd> · Start</td></tr>
+            <tr><td>Fly</td><td><kbd>⬅</kbd><kbd>⬆</kbd><kbd>⬇</kbd><kbd>➡</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · stick · drag</td></tr>
+            <tr><td>Shoot</td><td>Automatic! <span class="emo">✨</span></td></tr>
+            <tr><td>Dash</td><td><kbd>Space</kbd> · A button · <span class="emo">💨</span></td></tr>
+            <tr><td>Rainbow</td><td><kbd>Q</kbd> or <kbd>E</kbd> · Y button · <span class="emo">🌈</span></td></tr>
+            <tr><td>Pick power</td><td><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> · tap a card</td></tr>
+            <tr><td>Pause</td><td><kbd>Esc</kbd> · Start · <b>II</b></td></tr>
           </table>
-          <p class="small">Touch: left side moves, right side aims and fires.</p>
+          <p class="small">Grown-ups: turn off Auto-Aim in Settings to aim with the mouse or right stick. Hard mode is a real challenge!</p>
         </div>
       </div>
-      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div class="row"><button class="btn primary" data-act="back"><i class="emo">👍</i>GOT IT!</button></div>
     </section>
 
     <section id="scr-credits" class="screen">
       <h2>CREDITS</h2>
       <div class="credits">
         <p><b>HYPERCHAOS</b></p>
-        <p>Design, code, art &amp; sound<br><span id="creditsStudio"></span></p>
-        <p>All graphics and audio are generated in real time.<br>No samples were harmed.</p>
-        <p class="small">Thanks for playing!</p>
+        <p>Made with love by<br><span id="creditsStudio"></span></p>
+        <p>All pictures and sounds are made by the game itself, live!</p>
+        <p class="small">Fredoka font by The Fredoka Project Authors (SIL Open Font License).</p>
+        <p class="small">No ads. No tracking. Just fun. <span class="emo">💖</span></p>
       </div>
-      <div class="row"><button class="btn" data-act="back">BACK</button></div>
+      <div class="row"><button class="btn" data-act="back"><i class="emo">⬅️</i>BACK</button></div>
     </section>
 
     <section id="scr-pause" class="screen dim">
       <h2>PAUSED</h2>
+      <p id="pauseNote"></p>
       <div class="menu">
-        <button class="btn primary" data-act="resume">RESUME</button>
-        <button class="btn" data-act="settings">SETTINGS</button>
-        <button class="btn" data-act="abandon">ABANDON RUN</button>
+        <button class="btn primary" data-act="resume"><i class="emo">▶️</i>KEEP PLAYING</button>
+        <button class="btn" data-act="settings"><i class="emo">⚙️</i>SETTINGS</button>
+        <button class="btn danger" data-act="abandon"><i class="emo">🏠</i>GO HOME</button>
       </div>
-      <h3>YOUR BUILD</h3>
+      <h3>MY POWERS</h3>
       <div id="pauseBuild" class="build"></div>
     </section>
 
     <section id="scr-levelup" class="screen dim">
       <h2 class="lvl-title">LEVEL UP!</h2>
-      <p class="sub" id="lvlSub">Choose an upgrade</p>
+      <p class="sub" id="lvlSub">Pick a super power!</p>
       <div id="cards" class="cards"></div>
       <div class="row">
-        <button class="btn" data-act="reroll" id="btnReroll">REROLL</button>
-        <button class="btn" data-act="skipUpgrade">SKIP <small>+5 ◆</small></button>
+        <button class="btn blue" data-act="reroll" id="btnReroll">NEW CARDS</button>
+        <button class="btn" data-act="skipUpgrade">SKIP <small>+5 💎</small></button>
       </div>
     </section>
 
     <section id="scr-gameover" class="screen dim">
-      <h2 id="goTitle">GAME OVER</h2>
+      <h2 id="goTitle">GOOD TRY!</h2>
+      <div class="stars" id="goStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
       <p class="sub" id="goSub"></p>
       <div id="goStats" class="stats"></div>
       <div class="earned">+<span id="goShards">0</span> <span class="shard-ico"></span></div>
       <div class="row">
-        <button class="btn" data-act="menu">MENU</button>
-        <button class="btn" data-act="continueEndless" id="btnContinue" hidden>KEEP GOING (ENDLESS)</button>
-        <button class="btn primary" data-act="retry">RETRY</button>
+        <button class="btn" data-act="menu"><i class="emo">🏠</i>HOME</button>
+        <button class="btn blue" data-act="continueEndless" id="btnContinue" hidden><i class="emo">♾️</i>KEEP GOING!</button>
+        <button class="btn primary" data-act="retry"><i class="emo">🔁</i>PLAY AGAIN</button>
       </div>
     </section>
 

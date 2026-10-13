@@ -344,7 +344,16 @@ function enemyColor(e) {
 }
 
 function drawEnemy(ctx, e) {
-  if (e.boss) { e.bossDef.draw(ctx, e); return; }
+  if (e.boss) {
+    e.bossDef.draw(ctx, e);
+    const p = W.player;
+    drawFace(ctx, e.x, e.y, e.r * 0.55, {
+      look: Math.atan2(p.y - e.y, p.x - e.x),
+      mood: e.flash > 0 ? 'ouch' : e.phase > 1 ? 'mad' : 'grumpy',
+      blink: (e.t % 4) < 0.14,
+    });
+    return;
+  }
   const col = enemyColor(e);
   if (e.spawnT > 0) {
     const k = e.spawnT / 0.65;
@@ -378,9 +387,9 @@ function drawEnemy(ctx, e) {
   let r = e.r;
   if (shape === 'circle' && e.state === 1) r *= 1 + 0.25 * Math.abs(Math.sin(e.t * 30));
   shapePath(ctx, shape, r, e.t);
-  ctx.fillStyle = e.flash > 0 ? '#ffffff' : rgbaCache(col, 0.16);
+  ctx.fillStyle = e.flash > 0 ? '#ffffff' : rgbaCache(col, 0.38);
   ctx.fill();
-  ctx.lineWidth = e.elite ? 3.5 : 2.5;
+  ctx.lineWidth = e.elite ? 4 : 3;
   ctx.strokeStyle = e.flash > 0 ? '#ffffff' : col;
   ctx.stroke();
   if (e.charge > 0) {
@@ -391,7 +400,21 @@ function drawEnemy(ctx, e) {
   }
   ctx.restore();
 
+  const p = W.player;
+  drawFace(ctx, e.x, e.y + e.r * 0.05, e.r * (shape === 'square' ? 0.8 : shape === 'arrow' || shape === 'tri' ? 0.75 : 0.9), {
+    look: Math.atan2(p.y - e.y, p.x - e.x),
+    mood: e.flash > 0 ? 'ouch' : (e.state === 1 && (e.type === 'dasher' || e.type === 'bomber')) ? 'mad' : 'grumpy',
+    blink: (e.t + e.id * 0.37) % 3.4 < 0.12,
+  });
+
   if (e.elite) {
+    // a little golden crown for the fancy Grumpies
+    ctx.fillStyle = '#ffd93b';
+    const cx = e.x, cy = e.y - e.r - 6, w = e.r * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(cx - w, cy + 6); ctx.lineTo(cx - w, cy - 4); ctx.lineTo(cx - w / 2, cy + 1); ctx.lineTo(cx, cy - 8);
+    ctx.lineTo(cx + w / 2, cy + 1); ctx.lineTo(cx + w, cy - 4); ctx.lineTo(cx + w, cy + 6); ctx.closePath();
+    ctx.fill();
     ctx.strokeStyle = '#ffd000';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 8]);
@@ -405,6 +428,69 @@ function drawEnemy(ctx, e) {
       ctx.fillStyle = '#ffd000'; ctx.fillRect(e.x - w / 2, e.y - e.r - 16, w * (e.hp / e.maxHp), 4);
     }
   }
+}
+
+/* Cartoon face used by Grumpies, bosses and the happy floaters.
+   mood: 'grumpy' | 'mad' | 'ouch' | 'happy' */
+function drawFace(ctx, x, y, r, o = {}) {
+  const mood = o.mood || 'grumpy';
+  const ex = r * 0.38, ey = -r * 0.12, er = Math.max(2.4, r * 0.28);
+  const lw = Math.max(1.6, r * 0.11);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalAlpha *= 1;
+  if (mood === 'happy') {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = lw;
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.arc(s * ex, ey + er * 0.4, er * 0.75, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(0, r * 0.12, r * 0.38, 0.1 * Math.PI, 0.9 * Math.PI); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,120,170,0.75)';
+    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * r * 0.62, r * 0.12, r * 0.14, 0, TAU); ctx.fill(); }
+  } else if (mood === 'ouch' || o.blink) {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = lw;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      if (mood === 'ouch') { ctx.moveTo(s * ex - er * 0.6 * s, ey - er * 0.6); ctx.lineTo(s * ex + er * 0.5 * s, ey); ctx.lineTo(s * ex - er * 0.6 * s, ey + er * 0.6); }
+      else { ctx.moveTo(s * ex - er * 0.7, ey); ctx.lineTo(s * ex + er * 0.7, ey); }
+      ctx.stroke();
+    }
+    if (mood === 'ouch' && r > 9) { ctx.fillStyle = '#1a0f3d'; ctx.beginPath(); ctx.ellipse(0, r * 0.4, r * 0.16, r * 0.2, 0, 0, TAU); ctx.fill(); }
+  } else {
+    const lx = Math.cos(o.look || 0) * er * 0.42, ly = Math.sin(o.look || 0) * er * 0.42;
+    for (const s of [-1, 1]) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(s * ex, ey, er, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#1a0f3d';
+      ctx.beginPath(); ctx.arc(s * ex + lx, ey + ly, er * 0.52, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(s * ex + lx - er * 0.18, ey + ly - er * 0.2, er * 0.16, 0, TAU); ctx.fill();
+    }
+    if (r > 9) {
+      // grumpy eyebrows + pouty mouth
+      ctx.strokeStyle = '#1a0f3d';
+      ctx.lineWidth = lw * 1.1;
+      const tilt = mood === 'mad' ? 0.75 : 0.45;
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(s * (ex + er * 1.0), ey - er * (1.25 + tilt * 0.3));
+        ctx.lineTo(s * (ex - er * 0.7), ey - er * (1.05 - tilt * 0.4));
+        ctx.stroke();
+      }
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = lw;
+      ctx.beginPath();
+      if (mood === 'mad') ctx.ellipse(0, r * 0.45, r * 0.14, r * 0.12, 0, 0, TAU);
+      else ctx.arc(0, r * 0.62, r * 0.24, Math.PI * 1.2, Math.PI * 1.8);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 
 const _rgbaCache = new Map();

@@ -94,7 +94,8 @@ function updatePlayer(p, dt) {
   }
 
   // ---- aiming ----
-  const aim = Input.aim();
+  let aim = Input.aim();
+  if (Save.data.settings.autoAim && aim.mode === 'mouse') aim = { mode: 'auto' };
   let hasTarget = true;
   if (aim.mode === 'mouse') {
     const w = Game.screenToWorld(Input.mouse.x, Input.mouse.y);
@@ -298,8 +299,15 @@ function drawShip(ctx, id, color, x, y, angle, r, opts = {}) {
   ctx.lineWidth = 2.5;
   ctx.strokeStyle = opts.flash ? '#ffffff' : color;
   ctx.stroke();
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(r * 0.15, 0, r * 0.18, 0, TAU); ctx.fill();
+  // big friendly eyes
+  for (const s of [-1, 1]) {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(r * 0.12, s * r * 0.26, r * 0.22, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#1a0f3d';
+    ctx.beginPath(); ctx.arc(r * 0.2, s * r * 0.24, r * 0.12, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(r * 0.16, s * r * 0.24 - r * 0.05, r * 0.045, 0, TAU); ctx.fill();
+  }
   ctx.restore();
 }
 
