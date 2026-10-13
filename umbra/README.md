@@ -81,7 +81,7 @@ node tools/progression.js hard 800    # economy: how long a player takes to reac
 Balance at release:
 - Each rival beats the previous one in the ladder; the two rivals within a tier are close.
 - Every weapon class wins 35–63% of bot fights against the katana. At high skill the fast weapons (fists, dual blades) have the edge; at lower skill reach (polearms) helps more.
-- A HARD-skill bot starting from a fresh save takes about 50 minutes to beat its first HARD rival, about 4 hours to beat its first MASTER, and about 7.5 hours to beat LEGEND. These times count fighting only.
+- A HARD-skill bot starting from a fresh save beats its first HARD rival after about 40 minutes, its first MASTER after about 4.5 hours and a LEGEND after about 5 hours. These times count fighting only.
 
 ## Project structure
 
