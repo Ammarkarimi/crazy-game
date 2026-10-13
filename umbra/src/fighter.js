@@ -3,6 +3,7 @@
 
 const BUTTONS = ['attack', 'kick', 'throw', 'heavy', 'magic', 'roll', 'up'];
 const NEUTRAL = new Set(['idle', 'walk', 'crouch', 'land']);
+const CANCELABLE = new Set(['light1', 'light2', 'light3', 'kick', 'lunge', 'low']);
 
 function newController() {
   const z = () => ({ up: false, down: false, left: false, right: false, attack: false, kick: false, throw: false, heavy: false, magic: false, roll: false });
@@ -87,7 +88,7 @@ class Fighter {
   }
 
   inkColor() {
-    if (this.flash > 0) return this.flash > 3 ? '#ffffff' : '#9a9aa8';
+    if (this.flash > 0) return this.flash > 4 ? '#ffffff' : '#7a7a88';
     if (this.status.freeze > 0) return '#0d2436';
     if (this.status.poison > 0) return '#0b200c';
     if (this.status.burn > 0) return '#2a0c04';
@@ -302,6 +303,12 @@ class Fighter {
 
     const total = this.totalFrames(m);
     const winOpen = m.startup + (m.active + m.recovery) * RULES.chainOpen;
+    // special cancels on hit: launcher, side kick or sweep straight out of a connected attack
+    if (this.moveHit && t >= m.startup + m.active && CANCELABLE.has(m.id)) {
+      if (this.backHeld && this.take('attack')) { this.startMove('rising', M); return; }
+      if (this.fwdHeld && this.take('kick')) { this.startMove('sidekick', M); return; }
+      if (this.downHeld && this.take('kick')) { this.startMove('sweep', M); return; }
+    }
     if (t >= winOpen) {
       if (m.chain && this.take('attack')) { this.startMove(m.chain, M); return; }
       if ((m.id === 'light1' || m.id === 'light2') && this.take('kick')) { this.startMove('kick', M); return; }

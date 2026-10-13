@@ -69,7 +69,10 @@ class Brain {
       if (m.chain && me.moveT >= m.startup + (m.active + m.recovery) * RULES.chainOpen && this.chainSerial !== me.attackSerial) {
         this.chainSerial = me.attackSerial;
         const go = me.moveHit ? chance(P.combo) : chance(P.combo * 0.35);
-        if (go) {
+        if (go && me.moveHit && chance(P.combo * 0.3)) {
+          // fancy cancel: launcher or sweep
+          if (chance(0.5)) { c.h[backKey] = true; this.press('attack'); } else { c.h.down = true; this.press('kick'); }
+        } else if (go) {
           if (m.id === 'light2' && chance(0.22)) this.press('kick');
           else this.press('attack');
         }

@@ -49,11 +49,11 @@ const FIGHTERS = [
 
 /* ---------- Weapon classes: how a weapon changes every attack ---------- */
 const WEAPON_CLASS = {
-  fist:  { name: 'Fists',      speed: 1.25, reach: -28, dmg: 0.72, desc: 'Very fast, short reach' },
-  dual:  { name: 'Dual Blades', speed: 1.14, reach: -12, dmg: 0.84, desc: 'Fast, bleeding combos' },
+  fist:  { name: 'Fists',      speed: 1.38, reach: -14, dmg: 0.94, desc: 'Very fast, short reach' },
+  dual:  { name: 'Dual Blades', speed: 1.2,  reach: -10, dmg: 0.92, desc: 'Fast, bleeding combos' },
   blade: { name: 'Sword',      speed: 1.0,  reach: 0,   dmg: 1.0,  desc: 'Balanced speed and reach' },
-  pole:  { name: 'Polearm',    speed: 0.88, reach: 48,  dmg: 1.02, desc: 'Long reach, keeps foes away' },
-  heavy: { name: 'Heavy',      speed: 0.76, reach: 20,  dmg: 1.45, desc: 'Slow, huge damage, breaks guards' },
+  pole:  { name: 'Polearm',    speed: 0.86, reach: 44,  dmg: 0.88, desc: 'Long reach, keeps foes away' },
+  heavy: { name: 'Heavy',      speed: 0.74, reach: 16,  dmg: 1.22, desc: 'Slow, huge damage, breaks guards' },
 };
 
 const SLOTS = ['weapon', 'armor', 'helmet', 'ranged', 'magic'];
@@ -150,50 +150,50 @@ const RANGED_INFO = {
 /* Stats for an item at a given upgrade level (1..MAX_ITEM_LEVEL). */
 function itemStat(item, key, level) {
   const base = item[key] || 0;
-  return base * (1 + 0.16 * ((level || 1) - 1));
+  return base * (1 + 0.18 * ((level || 1) - 1));
 }
 function upgradeCost(item, level) {
   const base = item.gems ? 2400 + item.tier * 900 : Math.max(220, item.price);
-  return Math.round(base * 0.45 * level / 10) * 10;
+  return Math.round(base * 0.36 * level / 10) * 10;
 }
 
 /* ---------- Opponent difficulty tiers ---------- */
 const TIERS = [
-  { id: 'novice', name: 'NOVICE', color: '#9be08f', reward: 60,  gems: 2,  ai: { reaction: 30, think: 18, block: 0.06, read: 0.15, aggro: 0.32, combo: 0.2,  punish: 0.05, antiAir: 0.04, ranged: 0.12, magic: 0.25, roll: 0.02, hesitate: 0.4 } },
-  { id: 'easy',   name: 'EASY',   color: '#c7e86a', reward: 100, gems: 3,  ai: { reaction: 23, think: 14, block: 0.18, read: 0.3,  aggro: 0.42, combo: 0.38, punish: 0.14, antiAir: 0.12, ranged: 0.22, magic: 0.45, roll: 0.05, hesitate: 0.26 } },
-  { id: 'normal', name: 'NORMAL', color: '#ffd84a', reward: 160, gems: 4,  ai: { reaction: 17, think: 11, block: 0.34, read: 0.5,  aggro: 0.52, combo: 0.55, punish: 0.3,  antiAir: 0.28, ranged: 0.32, magic: 0.6,  roll: 0.1,  hesitate: 0.16 } },
-  { id: 'hard',   name: 'HARD',   color: '#ffa03a', reward: 250, gems: 5,  ai: { reaction: 13, think: 9,  block: 0.48, read: 0.66, aggro: 0.6,  combo: 0.7,  punish: 0.46, antiAir: 0.45, ranged: 0.38, magic: 0.75, roll: 0.16, hesitate: 0.1 } },
-  { id: 'expert', name: 'EXPERT', color: '#ff5e3a', reward: 380, gems: 7,  ai: { reaction: 10, think: 7,  block: 0.6,  read: 0.78, aggro: 0.66, combo: 0.82, punish: 0.6,  antiAir: 0.6,  ranged: 0.42, magic: 0.85, roll: 0.22, hesitate: 0.06 } },
-  { id: 'master', name: 'MASTER', color: '#ff2f6a', reward: 560, gems: 9,  ai: { reaction: 8,  think: 6,  block: 0.7,  read: 0.87, aggro: 0.7,  combo: 0.9,  punish: 0.72, antiAir: 0.7,  ranged: 0.46, magic: 0.9,  roll: 0.28, hesitate: 0.03 } },
-  { id: 'legend', name: 'LEGEND', color: '#c04bff', reward: 800, gems: 12, ai: { reaction: 6,  think: 5,  block: 0.78, read: 0.93, aggro: 0.75, combo: 0.95, punish: 0.84, antiAir: 0.8,  ranged: 0.5,  magic: 0.95, roll: 0.33, hesitate: 0.01 } },
+  { id: 'novice', name: 'NOVICE', color: '#9be08f', reward: 100, gems: 2,  ai: { reaction: 30, think: 18, block: 0.06, read: 0.15, aggro: 0.32, combo: 0.2,  punish: 0.05, antiAir: 0.04, ranged: 0.12, magic: 0.25, roll: 0.02, hesitate: 0.4 } },
+  { id: 'easy',   name: 'EASY',   color: '#c7e86a', reward: 170, gems: 3,  ai: { reaction: 23, think: 14, block: 0.18, read: 0.3,  aggro: 0.42, combo: 0.38, punish: 0.14, antiAir: 0.12, ranged: 0.22, magic: 0.45, roll: 0.05, hesitate: 0.26 } },
+  { id: 'normal', name: 'NORMAL', color: '#ffd84a', reward: 260, gems: 4,  ai: { reaction: 17, think: 11, block: 0.34, read: 0.5,  aggro: 0.52, combo: 0.55, punish: 0.3,  antiAir: 0.28, ranged: 0.32, magic: 0.6,  roll: 0.1,  hesitate: 0.16 } },
+  { id: 'hard',   name: 'HARD',   color: '#ffa03a', reward: 400, gems: 5,  ai: { reaction: 13, think: 9,  block: 0.48, read: 0.66, aggro: 0.6,  combo: 0.7,  punish: 0.46, antiAir: 0.45, ranged: 0.38, magic: 0.75, roll: 0.16, hesitate: 0.1 } },
+  { id: 'expert', name: 'EXPERT', color: '#ff5e3a', reward: 580, gems: 7,  ai: { reaction: 10, think: 7,  block: 0.6,  read: 0.78, aggro: 0.66, combo: 0.82, punish: 0.6,  antiAir: 0.6,  ranged: 0.42, magic: 0.85, roll: 0.22, hesitate: 0.06 } },
+  { id: 'master', name: 'MASTER', color: '#ff2f6a', reward: 820, gems: 9,  ai: { reaction: 8,  think: 6,  block: 0.7,  read: 0.87, aggro: 0.7,  combo: 0.9,  punish: 0.72, antiAir: 0.7,  ranged: 0.46, magic: 0.9,  roll: 0.28, hesitate: 0.03 } },
+  { id: 'legend', name: 'LEGEND', color: '#c04bff', reward: 1100, gems: 12, ai: { reaction: 6,  think: 5,  block: 0.78, read: 0.93, aggro: 0.75, combo: 0.95, punish: 0.84, antiAir: 0.8,  ranged: 0.5,  magic: 0.95, roll: 0.33, hesitate: 0.01 } },
 ];
 const TIER = Object.fromEntries(TIERS.map((t, i) => [t.id, Object.assign(t, { index: i })]));
 
 /* ---------- Computer opponents (no levels: pick any rival, any time) ---------- */
 const OPPONENTS = [
-  { id: 'kenta',  name: 'Kenta',        title: 'Dojo Apprentice',     tier: 'novice', fighter: 'monk',   style: 'brawler',
-    gear: { weapon: ['wraps', 1], armor: ['gi', 1], helmet: ['band', 1], ranged: ['shuriken', 1], magic: ['kiblast', 1] },
-    quote: 'Sensei says I am ready. I think.' },
   { id: 'hiro',   name: 'Old Hiro',     title: 'Village Elder',       tier: 'novice', fighter: 'mystic', style: 'defensive',
     gear: { weapon: ['staff', 1], armor: ['gi', 1], helmet: ['straw', 1], ranged: ['shuriken', 1], magic: ['kiblast', 1] },
     quote: 'My back hurts, but my staff does not.' },
+  { id: 'kenta',  name: 'Kenta',        title: 'Dojo Apprentice',     tier: 'novice', fighter: 'monk',   style: 'brawler',
+    gear: { weapon: ['wraps', 1], armor: ['gi', 1], helmet: ['band', 1], ranged: ['shuriken', 1], magic: ['kiblast', 1] },
+    quote: 'Sensei says I am ready. I think.' },
   { id: 'ryu',    name: 'Ryu',          title: 'Mountain Bandit',     tier: 'easy',   fighter: 'viper',  style: 'aggressive',
     gear: { weapon: ['daggers', 3], armor: ['vest', 1], helmet: ['band', 1], ranged: ['kunai', 2], magic: ['kiblast', 2] },
     quote: 'Your coins or your pride. Both, actually.' },
   { id: 'suzu',   name: 'Lady Suzu',    title: 'Teahouse Guard',      tier: 'easy',   fighter: 'ronin',  style: 'balanced',
     gear: { weapon: ['katana', 1], armor: ['gi', 2], helmet: ['band', 1], ranged: ['kunai', 1], magic: ['kiblast', 2] },
     quote: 'Please finish your tea first.' },
-  { id: 'tetsu',  name: 'Tetsu',        title: 'The Anvil',           tier: 'normal', fighter: 'brute',  style: 'aggressive',
-    gear: { weapon: ['axe', 2], armor: ['vest', 3], helmet: ['straw', 2], ranged: ['tAxe', 2], magic: ['kiblast', 3] },
-    quote: 'I break swords. And people who hold them.' },
   { id: 'mizu',   name: 'Mizu',         title: 'River Spear',         tier: 'normal', fighter: 'kage',   style: 'zoner',
     gear: { weapon: ['spear', 3], armor: ['vest', 2], helmet: ['hood', 2], ranged: ['shuriken', 3], magic: ['fireball', 1] },
     quote: 'Stay right there. Exactly one spear away.' },
+  { id: 'tetsu',  name: 'Tetsu',        title: 'The Anvil',           tier: 'normal', fighter: 'brute',  style: 'aggressive',
+    gear: { weapon: ['axe', 2], armor: ['vest', 3], helmet: ['straw', 2], ranged: ['tAxe', 2], magic: ['kiblast', 3] },
+    quote: 'I break swords. And people who hold them.' },
   { id: 'kuro',   name: 'Kuro',         title: 'Night Wolf',          tier: 'hard',   fighter: 'kage',   style: 'aggressive',
-    gear: { weapon: ['katana', 4], armor: ['lamellar', 1], helmet: ['hood', 3], ranged: ['shuriken', 4], magic: ['fireball', 3] },
+    gear: { weapon: ['katana', 3], armor: ['lamellar', 1], helmet: ['hood', 2], ranged: ['shuriken', 3], magic: ['fireball', 2] },
     quote: 'You will not even see me move.' },
   { id: 'raijin', name: 'Raijin',       title: 'Storm Monk',          tier: 'hard',   fighter: 'monk',   style: 'balanced',
-    gear: { weapon: ['claws', 2], armor: ['shadowrobe', 2], helmet: ['band', 3], ranged: ['shuriken', 3], magic: ['lightning', 2] },
+    gear: { weapon: ['claws', 3], armor: ['shadowrobe', 3], helmet: ['kabuto', 1], ranged: ['shuriken', 3], magic: ['lightning', 2] },
     quote: 'The storm does not ask permission.' },
   { id: 'lotus',  name: 'Black Lotus',  title: 'Poison Blossom',      tier: 'expert', fighter: 'viper',  style: 'trickster',
     gear: { weapon: ['kama', 4], armor: ['lamellar', 3], helmet: ['hood', 5], ranged: ['chakram', 2], magic: ['ice', 3] },
@@ -201,17 +201,17 @@ const OPPONENTS = [
   { id: 'gorou',  name: 'Iron Gorou',   title: 'Fortress Breaker',    tier: 'expert', fighter: 'brute',  style: 'defensive',
     gear: { weapon: ['hammer', 1], armor: ['yoroi', 1], helmet: ['kabuto', 3], ranged: ['tAxe', 4], magic: ['quake', 1] },
     quote: 'Walls fall. So will you.' },
-  { id: 'hayabusa', name: 'Hayabusa',   title: 'Silent Falcon',       tier: 'master', fighter: 'ronin',  style: 'zoner',
-    gear: { weapon: ['naginata', 5], armor: ['yoroi', 3], helmet: ['kabuto', 5], ranged: ['chakram', 4], magic: ['ice', 5] },
-    quote: 'One cut. That is all it takes.' },
   { id: 'akuma',  name: 'Crimson Oni',  title: 'Demon of the Gate',   tier: 'master', fighter: 'brute',  style: 'aggressive',
-    gear: { weapon: ['hammer', 4], armor: ['yoroi', 4], helmet: ['oni', 3], ranged: ['bomb', 2], magic: ['fireball', 5] },
+    gear: { weapon: ['hammer', 3], armor: ['yoroi', 3], helmet: ['oni', 2], ranged: ['bomb', 2], magic: ['fireball', 4] },
     quote: 'The gate is closed. Forever.' },
+  { id: 'hayabusa', name: 'Hayabusa',   title: 'Silent Falcon',       tier: 'master', fighter: 'ronin',  style: 'zoner',
+    gear: { weapon: ['naginata', 4], armor: ['yoroi', 2], helmet: ['kabuto', 4], ranged: ['chakram', 3], magic: ['ice', 4] },
+    quote: 'One cut. That is all it takes.' },
   { id: 'yami',   name: 'Yami',         title: 'Shadow Empress',      tier: 'legend', fighter: 'mystic', style: 'trickster',
-    gear: { weapon: ['voidstaff', 3], armor: ['dragonplate', 2], helmet: ['oni', 5], ranged: ['chakram', 5], magic: ['shadow', 5] },
+    gear: { weapon: ['voidstaff', 2], armor: ['dragonplate', 1], helmet: ['oni', 4], ranged: ['chakram', 4], magic: ['shadow', 4] },
     quote: 'You fight shadows. I AM the shadow.' },
   { id: 'kenshin', name: 'Kenshin',     title: 'The Last Sword Saint', tier: 'legend', fighter: 'ronin', style: 'balanced',
-    gear: { weapon: ['dragon', 4], armor: ['dragonplate', 3], helmet: ['dragonhelm', 3], ranged: ['bomb', 4], magic: ['drain', 4] },
+    gear: { weapon: ['dragon', 3], armor: ['dragonplate', 2], helmet: ['dragonhelm', 2], ranged: ['bomb', 3], magic: ['drain', 3] },
     quote: 'Show me why you came this far.' },
 ];
 const OPPONENT = Object.fromEntries(OPPONENTS.map(o => [o.id, o]));
@@ -241,7 +241,7 @@ const ACHIEVEMENTS = [
   { id: 'firstWin',  name: 'First Blood',       desc: 'Win your first duel.' },
   { id: 'perfect',   name: 'Untouchable',       desc: 'Win a round without taking damage.' },
   { id: 'combo5',    name: 'Combo Artist',      desc: 'Land a 5-hit combo.' },
-  { id: 'combo10',   name: 'Combo Master',      desc: 'Land a 10-hit combo.' },
+  { id: 'combo10',   name: 'Combo Master',      desc: 'Land a 7-hit combo.' },
   { id: 'magicKo',   name: 'Spellbound',        desc: 'Finish a round with magic.' },
   { id: 'rangedKo',  name: 'Sharpshooter',      desc: 'Finish a round with a throw.' },
   { id: 'parry10',   name: 'Iron Wall',         desc: 'Parry 10 attacks in total.' },

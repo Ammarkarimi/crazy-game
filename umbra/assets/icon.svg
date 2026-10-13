@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#5a0f1e"/><stop offset="1" stop-color="#08060c"/></radialGradient>
+    <radialGradient id="moon" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff6a6a"/><stop offset="0.85" stop-color="#c8243c"/><stop offset="1" stop-color="#8a1022"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#sky)"/>
+  <circle cx="256" cy="226" r="150" fill="url(#moon)"/>
+  <rect x="40" y="410" width="432" height="10" fill="#050407"/>
+  <!-- fighter silhouette: lunge with sword raised -->
+  <g fill="#050407" stroke="#050407" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="236" cy="176" r="22"/>
+    <path d="M236 196 L262 290 L222 296 Z" stroke-width="10"/>
+    <path d="M250 290 L318 340 L332 412" fill="none" stroke-width="26"/>
+    <path d="M232 292 L190 350 L150 410" fill="none" stroke-width="26"/>
+    <path d="M246 214 L292 196 L330 160" fill="none" stroke-width="18"/>
+    <path d="M242 220 L206 250 L184 238" fill="none" stroke-width="16"/>
+    <path d="M330 160 L452 52" fill="none" stroke-width="9"/>
+    <path d="M222 168 L170 150 L150 168" fill="none" stroke-width="7"/>
+  </g>
+  <path d="M336 156 L446 58" stroke="#f3e9d8" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+  <ellipse cx="244" cy="176" rx="7" ry="2.6" fill="#ffffff"/>
+</svg>
