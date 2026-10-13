@@ -4,7 +4,7 @@
 
 ![HYPERCHAOS](marketing/screenshot-4-rainbow-mode.png)
 
-> **Also in this repository:** [UMBRA: Duel of Shadows](umbra/), a silhouette sword-fighting game with six fighters, a gear forge and 14 rivals to choose from. See [`umbra/README.md`](umbra/README.md).
+> **Also in this repository:** [UMBRA: Duel of Shadows](umbra/), a silhouette sword-fighting game with six fighters, a gear forge and 14 rivals to choose from. Play it at https://umbra-duel-of-shadows.vercel.app. See [`umbra/README.md`](umbra/README.md).
 
 ## Play now
 

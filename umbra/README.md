@@ -4,6 +4,8 @@
 
 ![UMBRA](marketing/screenshot-1-shrine-duel.png)
 
+**Play now:** https://umbra-duel-of-shadows.vercel.app. It installs as an app on phones and tablets and works offline. Privacy policy: https://umbra-duel-of-shadows.vercel.app/privacy.html
+
 ## Features
 
 - **Frame-based combat.** Every move has startup, active and recovery frames, plus hitstop, counter hits, juggles, knockdowns and guard breaks.
@@ -69,7 +71,7 @@ npm run marketing         # icons, screenshots, cover + Steam capsules
 
 **Automatic desktop builds:** the *Build UMBRA desktop apps* GitHub Actions workflow builds Windows, macOS and Linux apps on GitHub's machines and attaches them to a GitHub Release. Run it from the **Actions** tab, or push a tag such as `umbra-v1.0.0`.
 
-**Website:** `vercel.json` is ready. Create a Vercel project from this repository with **Root Directory = `umbra`** and it builds and deploys on every push. Set `UMBRA_DEMO=1` in the project's environment variables to publish the free demo instead of the full game.
+**Website:** live at https://umbra-duel-of-shadows.vercel.app (Vercel project `umbra-duel-of-shadows`, Root Directory `umbra`). It redeploys on every push. Set `UMBRA_DEMO=1` in the project's environment variables to publish the free demo instead of the full game.
 
 ## Quality and balance tools
 
@@ -84,7 +86,8 @@ node tools/progression.js hard 800    # economy: how long a player takes to reac
 Balance at release:
 - Each rival beats the previous one in the ladder; the two rivals within a tier are close.
 - Every weapon class wins 35–63% of bot fights against the katana. At high skill the fast weapons (fists, dual blades) have the edge; at lower skill reach (polearms) helps more.
-- A HARD-skill bot starting from a fresh save beats its first HARD rival after about 40 minutes, its first MASTER after about 4.5 hours and a LEGEND after about 5 hours. These times count fighting only.
+- A HARD-skill bot starting from a fresh save beats its first HARD rival after about 40 minutes, its first MASTER after about 4 hours and a LEGEND after about 5.5 hours. These times count fighting only.
+- A pure button-masher (never blocks) with starter gear beats every NOVICE and EASY rival and splits with the first NORMAL one, but loses almost every fight from Tetsu (NORMAL) upward. Beginners get early wins, and the climb needs real skill.
 
 ## Project structure
 
