@@ -19,7 +19,9 @@ async function boot(page) {
   await page.goto(GAME_URL);
   await page.evaluate(() => {
     Save.data.seenHowTo = true;
-    Save.data.settings.damageNumbers = true;
+    Save.data.settings.damageNumbers = false;
+    Save.data.settings.voice = false;
+    Save.data.settings.difficulty = 'easy';
     Achievements.unlock = () => {};
     const st = document.createElement('style');
     st.textContent = '#toasts{display:none!important}';
@@ -59,6 +61,7 @@ async function scene(page, setup, secs) {
     if (setup.chaos) w.chaos = setup.chaos;
     if (setup.overdrive) activateOverdrive();
     w.banners.length = 0;
+    w.hints = null;
     FX.texts.length = 0;
   }, [setup]);
   await page.waitForTimeout(secs * 1000);
@@ -88,9 +91,8 @@ async function scene(page, setup, secs) {
       const o = document.createElement('div');
       o.style.cssText = 'position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;' +
         'background:radial-gradient(ellipse at center, rgba(5,1,15,0.55) 0%, rgba(5,1,15,0.15) 60%, rgba(5,1,15,0.6) 100%);pointer-events:none';
-      o.innerHTML = '<div style="font:900 italic ' + logo + 'px Segoe UI,Arial,sans-serif;letter-spacing:.04em;color:#fff;' +
-        'text-shadow:0 0 6px #fff,0 0 18px #ff2bd6,0 0 42px #ff2bd6,0 0 80px #00f0ff">HYPERCHAOS</div>' +
-        '<div style="margin-top:4px;font:700 ' + Math.round(logo * 0.17) + 'px Segoe UI,Arial,sans-serif;letter-spacing:.5em;color:#00f0ff;text-shadow:0 0 10px #00f0ff">NEON ARENA ROGUELITE</div>';
+      o.innerHTML = '<div class="rainbow" style="font-size:' + logo + 'px">' + 'HYPERCHAOS'.split('').map(c => '<span>' + c + '</span>').join('') + '</div>' +
+        '<div class="tagline" style="font-size:' + Math.round(logo * 0.2) + 'px">SUPER SILLY SPACE ADVENTURE</div>';
       document.body.appendChild(o);
     }, [logo]);
     await p.waitForTimeout(500);
@@ -101,12 +103,12 @@ async function scene(page, setup, secs) {
 
   // ---- gameplay screenshots ----
   const shots = [
-    { name: 'screenshot-1-bulletstorm', wave: 9, ship: 'vector', upgrades: { multishot: 4, overclock: 5, hollow: 4, orbital: 3, pierce: 2, chain: 2 } },
-    { name: 'screenshot-2-hive-queen', wave: 5, ship: 'prism', upgrades: { overclock: 3, orbital: 2, drone: 2 }, keepBoss: true, warm: 6 },
-    { name: 'screenshot-3-singularity', wave: 12, ship: 'razor', event: 'singularity', upgrades: { multishot: 2, overclock: 4, homing: 1, explosive: 2 } },
-    { name: 'screenshot-4-overdrive', wave: 14, ship: 'glitch', upgrades: { multishot: 3, overclock: 4, explosive: 2, drone: 2, thunder: 2 }, overdrive: true },
-    { name: 'screenshot-5-mirrormind', wave: 15, ship: 'bulwark', upgrades: { overclock: 5, hollow: 5, pierce: 2, orbital: 4 }, keepBoss: true, warm: 7 },
-    { name: 'screenshot-6-meteor-storm', wave: 16, ship: 'vector', event: 'meteor', upgrades: { multishot: 3, ricochet: 3, overclock: 5, explosive: 2 } },
+    { name: 'screenshot-1-confetti-party', wave: 9, ship: 'vector', upgrades: { multishot: 4, overclock: 5, hollow: 4, orbital: 3, pierce: 2, chain: 2 } },
+    { name: 'screenshot-2-queen-buzz', wave: 5, ship: 'prism', upgrades: { overclock: 3, orbital: 2, drone: 2 }, keepBoss: true, warm: 6 },
+    { name: 'screenshot-3-space-whirlpool', wave: 12, ship: 'razor', event: 'singularity', upgrades: { multishot: 2, overclock: 4, homing: 1, explosive: 2 } },
+    { name: 'screenshot-4-rainbow-mode', wave: 14, ship: 'glitch', upgrades: { multishot: 3, overclock: 4, explosive: 2, drone: 2, thunder: 2 }, overdrive: true },
+    { name: 'screenshot-5-copycat-crystal', wave: 15, ship: 'bulwark', upgrades: { overclock: 5, hollow: 5, pierce: 2, orbital: 4 }, keepBoss: true, warm: 7 },
+    { name: 'screenshot-6-falling-stars', wave: 16, ship: 'vector', event: 'meteor', upgrades: { multishot: 3, ricochet: 3, overclock: 5, explosive: 2 } },
   ];
   for (const s of shots) {
     const p = await browser.newPage({ viewport: { width: 1920, height: 1080 } });

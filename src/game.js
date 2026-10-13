@@ -260,9 +260,11 @@ function playerDie() {
   const p = W.player;
   W.dying = 2.0;
   p.hp = 0;
-  FX.explosion(p.x, p.y, p.color, 5);
-  FX.explosion(p.x, p.y, '#ffffff', 2);
-  FX.debris(p.x, p.y, p.color, 24, 420, 8);
+  // the rocket goes "poof!" into a cloud of confetti and stars
+  FX.explosion(p.x, p.y, p.color, 3);
+  FX.confetti(p.x, p.y, 120, 700);
+  FX.stars(p.x, p.y, 30, '#ffd93b', 500);
+  FX.text(p.x, p.y - 40, 'POOF!', '#ffffff', 40, 1.6, { pop: 1 });
   Game.grid.impulse(p.x, p.y, 2400, 700);
   shake(1);
   screenFlash('#ffffff', 0.8);
@@ -1125,8 +1127,8 @@ const Game = {
       if (h.kind === 'meteor') {
         if (!h.hit && h.t >= h.warn) {
           h.hit = true;
-          FX.explosion(h.x, h.y, '#ff7a00', 2.6);
-          FX.debris(h.x, h.y, '#ffb000', 10, 380, 9);
+          FX.explosion(h.x, h.y, '#ffd93b', 2.2);
+          FX.stars(h.x, h.y, 18, '#ffd93b', 420);
           Game.grid.impulse(h.x, h.y, 1100, h.r * 2.6);
           shake(0.4);
           Sound.play('meteor');
@@ -1572,12 +1574,14 @@ const Game = {
       if (h.kind === 'meteor' && !top) {
         if (h.t >= h.warn) continue;
         const k = h.t / h.warn;
-        ctx.strokeStyle = '#ff7a00';
+        ctx.strokeStyle = '#ffd93b';
         ctx.globalAlpha = 0.5 + 0.5 * Math.sin(h.t * 25) ** 2;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([12, 8]);
         ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, TAU); ctx.stroke();
-        ctx.globalAlpha = 0.18;
-        ctx.fillStyle = '#ff7a00';
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 0.16;
+        ctx.fillStyle = '#ffd93b';
         ctx.beginPath(); ctx.arc(h.x, h.y, h.r * k, 0, TAU); ctx.fill();
         ctx.globalAlpha = 1;
       } else if (h.kind === 'meteor' && top) {
@@ -1586,12 +1590,15 @@ const Game = {
         const mx = h.x + 260 * k, my = h.y - 640 * k;
         const g = 40;
         ctx.globalCompositeOperation = 'lighter';
-        ctx.drawImage(FX.glow('#ff7a00'), mx - g, my - g, g * 2, g * 2);
-        ctx.strokeStyle = 'rgba(255,170,60,0.5)'; ctx.lineWidth = 8;
+        ctx.drawImage(FX.glow('#ffd93b'), mx - g, my - g, g * 2, g * 2);
+        ctx.strokeStyle = 'rgba(255,217,59,0.45)'; ctx.lineWidth = 10; ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx + 80, my - 200); ctx.stroke();
+        ctx.lineCap = 'butt';
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = '#ffe0b0';
-        ctx.beginPath(); ctx.arc(mx, my, 10, 0, TAU); ctx.fill();
+        ctx.save(); ctx.translate(mx, my); ctx.rotate(W.t * 6);
+        ctx.fillStyle = '#ffd93b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+        starPath(ctx, 16); ctx.fill(); ctx.stroke();
+        ctx.restore();
       } else if (h.kind === 'laser' && top) {
         const ex = h.x + Math.cos(h.angle) * h.len, ey = h.y + Math.sin(h.angle) * h.len;
         ctx.lineCap = 'round';

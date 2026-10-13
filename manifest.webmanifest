@@ -1,13 +1,18 @@
 {
   "name": "HYPERCHAOS",
   "short_name": "HYPERCHAOS",
-  "description": "Neon arena roguelite. Survive 20 waves of escalating madness.",
+  "description": "A super silly space adventure for kids. Fly your rocket, cheer up the Grumpies and collect stickers!",
   "start_url": "./index.html",
   "display": "fullscreen",
   "orientation": "landscape",
-  "background_color": "#05010f",
-  "theme_color": "#05010f",
+  "background_color": "#0d0630",
+  "theme_color": "#0d0630",
   "icons": [
-    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }

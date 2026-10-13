@@ -61,12 +61,7 @@ const HUD = {
     const bw = small ? 150 : 260;
     this.bar(ctx, pad, top, bw, small ? 14 : 18, hpf, hpf < 0.3 ? '#ff5a7a' : '#4dff9a');
     this.text(ctx, `❤ ${Math.ceil(Math.max(0, p.hp))} / ${Math.round(p.maxHp)}`, pad + 6, top + (small ? 12 : 15), small ? 11 : 14, '#1a0b52', 'left', 700);
-    // lives
-    ctx.font = `${small ? 16 : 20}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif`;
-    ctx.textAlign = 'left';
-    let hx = pad + bw + 8;
-    for (let i = 0; i < w.lives; i++) { ctx.fillText('❤️', hx, top + (small ? 14 : 17)); hx += small ? 20 : 25; }
-    if (p.secondWind > 0) ctx.fillText('💖', hx, top + (small ? 14 : 17));
+
 
     // ---- chaos meter ----
     const cy = top + (small ? 20 : 26);
@@ -82,6 +77,14 @@ const HUD = {
     const df = 1 - Math.max(0, p.dashTimer) / p.dashCd;
     this.bar(ctx, pad, cy + (small ? 29 : 37), small ? 70 : 100, 6, df, df >= 1 ? '#2ee6ff' : '#3a6a90');
     this.text(ctx, '💨 DASH', pad + (small ? 76 : 106), cy + (small ? 35 : 43), 12, df >= 1 ? '#2ee6ff' : '#b9b3e6');
+
+    // ---- lives (under the meters, clear of the wave title on any screen size) ----
+    ctx.font = `${small ? 16 : 20}px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif`;
+    ctx.textAlign = 'left';
+    let hx = pad;
+    const hy = cy + (small ? 56 : 68);
+    for (let i = 0; i < w.lives; i++) { ctx.fillText('❤️', hx, hy); hx += small ? 20 : 25; }
+    if (p.secondWind > 0) ctx.fillText('💖', hx, hy);
 
     // ---- wave / boss ----
     const cx = sw / 2;

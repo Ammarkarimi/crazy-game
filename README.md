@@ -1,27 +1,32 @@
-# HYPERCHAOS
+# HYPERCHAOS: Super Silly Space Adventure
 
-**Neon arena roguelite.** Survive 20 waves of escalating madness, stack absurd weapon upgrades into game-breaking builds, and unleash **OVERDRIVE** when the chaos meter fills.
+**A bright, cute, non-violent space game that small kids love, with real depth for grown-ups.** Fly a happy little rocket, blow sparkle bubbles, and cheer up the Grumpies: grumpy space monsters that turn into smiling faces and float away in confetti.
 
-![HYPERCHAOS](marketing/screenshot-4-overdrive.png)
+![HYPERCHAOS](marketing/screenshot-4-rainbow-mode.png)
 
-## Features
+## Made for kids
 
 | | |
 |---|---|
-| **20-wave campaign** | Four bosses (Hive Queen, Obliterator, Mirrormind, Chaos Engine) with multi-phase attack patterns |
-| **Endless mode** | Bosses loop with scaling health. How deep can you go? |
-| **Daily Chaos** | A seeded daily run: same ship and same chaos events for every player that day |
-| **12 Chaos Events** | Meteor Storm, Mirror World, Singularity, Bullet Hell, Big Mode, Blackout, Disco Inferno... |
-| **33 upgrades** | Common to Legendary: orbitals, drones, tesla chains, hydra shells, ricochet, thunder god... |
-| **5 ships** | Vector, Razor, Bulwark, Prism, Glitch, each with its own playstyle |
-| **Meta progression** | Earn shards to buy permanent upgrades and unlock ships |
-| **24 achievements** | With shard rewards |
-| **Overdrive** | Invincibility, 2.5x fire rate, slowed time and a screen-clearing shockwave |
-| **Juice** | Reactive warp grid, additive neon glow, hit-stop, screen shake, damage numbers |
-| **Procedural audio** | Every sound effect *and* the adaptive synthwave soundtrack is synthesized live. No asset files |
-| **Every input** | Keyboard + mouse, gamepad (Xbox/PlayStation/Steam Deck) and touch twin-sticks |
-| **Accessible settings** | Volume mixing, shake, particles, flashes, CRT filter, auto-fire, FPS counter |
-| **Tiny** | The whole web build is about 215 KB, with zero runtime dependencies |
+| **Easy for little hands** | Shooting and aiming are automatic. Kids just steer with the arrows, a stick or a finger drag |
+| **Gentle by default** | **Easy** gives 3 lives, extra health, slower and softer Grumpies and shorter waves. **Normal** and **Hard** are there to grow into |
+| **Non-violent** | Enemies get *cheered up*, not destroyed: googly-eyed Grumpies turn happy and float away |
+| **Pre-reader friendly** | Emoji icons on every button, card and sticker. Short, simple words |
+| **Lots of praise** | "NICE!", "AWESOME!", "SUPERSTAR!" pop-ups, confetti, a cheering voice and 1-3 star ratings. A game never ends with "Game Over", only "Good try!" |
+| **Collecting** | 24 stickers in a Sticker Book, 5 cute rockets, 9 shop upgrades |
+| **Parent features** | Break reminder (15/30/60 min), "grown-ups only" maths gate before erasing progress, no ads, no purchases, no tracking, fully offline |
+| **Comfort settings** | Screen shake, flashes, confetti amount, voice, music and sound volume |
+
+## Game features
+
+- **20-wave adventure**, **Forever Mode** and a seeded **Daily Surprise**
+- **4 Big Grumpy bosses**: Queen Buzz, Robo Grump, Copycat Crystal and King Grumpus
+- **12 surprise events**: Disco Party, Giant Mode, Teeny Tiny, Treasure Time, Piñata Party, Space Whirlpool...
+- **33 super powers**: Double Shot, Robot Buddy, Spinning Star, Smart Bubbles, Confetti Pop, Thunder Buddy...
+- **Rainbow Mode**: fill the rainbow bar for invincible, super-fast bubble blasting
+- A reactive warp-grid playground, sleepy cartoon planets, and a happy chiptune soundtrack. **Every sound and picture is generated live**, with no asset files apart from one small font
+- Keyboard + mouse, gamepad (Xbox/PlayStation/Steam Deck) and touch
+- Under 300 KB for the whole web build
 
 ## Play it locally
 
@@ -34,13 +39,14 @@ No build step needed. Either:
 
 ```
 index.html            Page shell + menu markup
-css/style.css         Neon UI
+css/style.css         Candy-coloured UI
+assets/fonts/         Fredoka font (SIL Open Font License, see OFL.txt)
 src/util.js           Math, seeded RNG, spatial grid, VERSION + STUDIO_NAME
 src/save.js           localStorage persistence
 src/audio.js          Procedural SFX + step-sequencer soundtrack
 src/input.js          Keyboard/mouse, gamepad, touch
 src/fx.js             Particles, warp grid, glow sprites
-src/data.js           Ships, upgrades, meta shop, achievements, chaos events  <- balance here
+src/data.js           Difficulty levels, rockets, powers, shop, stickers, events  <- balance here
 src/enemies.js        Enemy roster + AI
 src/bosses.js         Bosses
 src/player.js         Ship, weapons, orbitals, drones
@@ -89,10 +95,10 @@ npm test                 # automated QA run through every event and boss
 
 | Store | Notes | Suggested price |
 |---|---|---|
-| **itch.io** | Instant, free to list, you choose the revenue share. Offer the free web demo (`npm run build:demo`) and sell the desktop download. | $3.99 - $4.99 |
+| **itch.io** | Instant, free to list, you choose the revenue share. Tag it "kids" and "family friendly". Offer the free web demo (`npm run build:demo`) and sell the desktop download. | $3.99 - $4.99 |
 | **Steam** | $100 Steam Direct fee per game. Use the Electron build. Wishlists before launch are key. | $4.99 |
 | **Web portals** (CrazyGames, Poki, GameDistribution) | Ad revenue share rather than sales. Upload the web zip. | Free + ads |
-| **Mobile** | Wrap with Capacitor or Cordova; touch controls are built in. | $1.99 or free + IAP |
+| **Mobile / tablets** | Wrap with Capacitor or Cordova; touch controls are built in. Kids' categories (Apple "Kids", Google "Teacher Approved") need a privacy policy and no third-party ads or tracking, which this game already meets. | $2.99 premium (best for kids' apps) |
 
 `STORE_PAGE.md` has ready-to-paste store copy, tags and a feature list.
 
@@ -101,7 +107,8 @@ npm test                 # automated QA run through every event and boss
 - **Studio name:** `STUDIO_NAME` in `src/util.js` (shown on the credits screen).
 - **Version:** `VERSION` in `src/util.js` and `version` in `package.json`.
 - **App ID / copyright:** the `build` section of `package.json`.
-- **Balance:** almost everything lives in `src/data.js` (upgrades, ships, meta costs). Wave scaling is in `startWave()` in `src/game.js`, and boss HP is in `src/bosses.js`.
+- **Difficulty:** the `DIFFICULTY` table at the top of `src/data.js` (lives, health, enemy speed and damage, wave length).
+- **Balance:** almost everything lives in `src/data.js` (powers, rockets, shop costs). Wave scaling is in `startWave()` in `src/game.js`, and boss HP is in `src/bosses.js`.
 - **Before you launch,** do a trademark search on the name "HYPERCHAOS" in your target markets.
 
 ## License

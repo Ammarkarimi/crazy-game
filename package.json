@@ -2,7 +2,7 @@
   "name": "hyperchaos",
   "productName": "HYPERCHAOS",
   "version": "1.0.0",
-  "description": "Neon arena roguelite. Survive 20 waves of escalating madness.",
+  "description": "A super silly space adventure for kids (and grown-ups!). Fly your rocket, cheer up the Grumpies and collect stickers.",
   "author": "ammarkarimi",
   "license": "UNLICENSED",
   "private": true,
@@ -26,7 +26,10 @@
     "appId": "com.ammarkarimi.hyperchaos",
     "productName": "HYPERCHAOS",
     "copyright": "Copyright © 2026 ammarkarimi",
-    "directories": { "output": "release", "buildResources": "build" },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
     "files": [
       "index.html",
       "manifest.webmanifest",
@@ -36,9 +39,30 @@
       "electron/**",
       "build/icon.png"
     ],
-    "win": { "target": ["nsis", "portable"], "icon": "build/icon.png" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
-    "mac": { "target": ["dmg"], "category": "public.app-category.games", "icon": "build/icon.png" },
-    "linux": { "target": ["AppImage"], "category": "Game", "icon": "build/icon.png" }
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Game",
+      "icon": "build/icon.png"
+    }
   }
 }

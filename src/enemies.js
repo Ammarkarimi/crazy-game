@@ -211,7 +211,9 @@ const ENEMY_TYPES = Object.keys(ENEMIES).filter(k => ENEMIES[k].weight > 0);
 function bomberExplode(e, self) {
   e.exploded = true;
   const R = 100 * (W.sizeMult || 1);
-  FX.explosion(e.x, e.y, '#ff4020', 2);
+  // party-popper blast
+  FX.explosion(e.x, e.y, '#ff5ec8', 1.6);
+  FX.confetti(e.x, e.y, 40, 520);
   FX.ring(e.x, e.y, '#ffb000', 10, R, 0.35, 8);
   Game.grid.impulse(e.x, e.y, 520, 220);
   shake(0.35);
