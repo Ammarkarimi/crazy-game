@@ -19,8 +19,9 @@ const CTRL_KEYS = ['up', 'down', 'left', 'right', 'attack', 'kick', 'throw', 'he
 
 const Input = {
   keys: new Set(),
+  tapped: new Set(),      // keys pressed since the last poll, so very quick taps are never lost
   prev: [{}, {}],
-  touch: { active: false, dir: { up: false, down: false, left: false, right: false }, btn: {} },
+  touch: { active: false, dir: { up: false, down: false, left: false, right: false }, btn: {}, tap: {} },
   touchMode: false,
   stick: null,
 
@@ -28,6 +29,7 @@ const Input = {
     window.addEventListener('keydown', e => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code) && Game.inMatch()) e.preventDefault();
       this.keys.add(e.code);
+      this.tapped.add(e.code);
     });
     window.addEventListener('keyup', e => this.keys.delete(e.code));
     window.addEventListener('blur', () => this.keys.clear());
@@ -64,7 +66,7 @@ const Input = {
     const map = mode === 'versus' ? [KEYMAP.p1, KEYMAP.p2] : [KEYMAP.solo, null];
     for (let i = 0; i < 2; i++) {
       if (!map[i]) continue;
-      for (const k of CTRL_KEYS) hs[i][k] = map[i][k].some(c => this.keys.has(c));
+      for (const k of CTRL_KEYS) hs[i][k] = map[i][k].some(c => this.keys.has(c) || this.tapped.has(c));
     }
     if (mode === 'versus') {
       if (pads.length >= 2) { this.readPad(pads[0], hs[0]); this.readPad(pads[1], hs[1]); }
@@ -73,8 +75,10 @@ const Input = {
     if (this.touchMode && mode !== 'versus') {
       const t = this.touch;
       for (const k of ['up', 'down', 'left', 'right']) hs[0][k] = hs[0][k] || t.dir[k];
-      for (const k of ['attack', 'kick', 'throw', 'heavy', 'magic', 'roll']) hs[0][k] = hs[0][k] || !!t.btn[k];
+      for (const k of ['attack', 'kick', 'throw', 'heavy', 'magic', 'roll']) hs[0][k] = hs[0][k] || !!t.btn[k] || !!t.tap[k];
+      t.tap = {};
     }
+    this.tapped.clear();
     const out = [];
     for (let i = 0; i < 2; i++) {
       const c = { h: hs[i], p: {} };
@@ -116,7 +120,7 @@ const Input = {
     zone.addEventListener('pointerup', end); zone.addEventListener('pointercancel', end);
     for (const el of root.querySelectorAll('[data-btn]')) {
       const k = el.dataset.btn;
-      el.addEventListener('pointerdown', e => { this.touchMode = true; this.touch.btn[k] = true; el.classList.add('on'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+      el.addEventListener('pointerdown', e => { this.touchMode = true; this.touch.btn[k] = true; this.touch.tap[k] = true; el.classList.add('on'); el.setPointerCapture(e.pointerId); e.preventDefault(); });
       const up = () => { this.touch.btn[k] = false; el.classList.remove('on'); };
       el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
     }

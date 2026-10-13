@@ -8,7 +8,7 @@ class Camera {
     const mid = this.focus !== null ? this.focus : (a.x + b.x) / 2;
     const dist = Math.abs(a.x - b.x);
     const maxY = Math.max(a.y, b.y);
-    let viewW = clamp(dist + 600, 860, 1300);
+    let viewW = clamp(dist + 600, 860, 1520);
     let z = this.W / viewW;
     z = Math.min(z, (this.H * 0.8) / (330 + maxY * 0.9));
     z *= this.zoomBoost;

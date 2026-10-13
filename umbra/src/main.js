@@ -112,6 +112,7 @@ const Game = {
     match.cam.resize(this.W, this.H);
     match.cam.follow(match.f1, match.f2, true);
     this.paused = false;
+    Input.tapped.clear(); Input.prev = [{}, {}];
     for (const s of document.querySelectorAll('.screen')) s.classList.remove('active');
     $('wallet').hidden = true;
     UI.current = 'match';

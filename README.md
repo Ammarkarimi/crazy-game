@@ -4,6 +4,8 @@
 
 ![HYPERCHAOS](marketing/screenshot-4-rainbow-mode.png)
 
+> **Also in this repository:** [UMBRA: Duel of Shadows](umbra/), a silhouette sword-fighting game with six fighters, a gear forge and 14 rivals to choose from. See [`umbra/README.md`](umbra/README.md).
+
 ## Play now
 
 - **Play in your browser:** https://hyperchaos.vercel.app (on phones and tablets, install it from the menu or with *Add to Home Screen*; it then works offline)
